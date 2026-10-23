@@ -492,6 +492,7 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
     <p class="brand">BONK<span>!</span></p>
     <p class="kStatus" id="kStatus">Zoeken naar de telefoon met de kaarten…</p>
     <div class="kBar" id="kBar" hidden><div class="kFill" id="kFill"></div><span id="kSecs">90</span></div>
+    <p class="note err" id="kVer" hidden>De spel-telefoon heeft een andere versie van BONK. Herlaad de site op beide telefoons.</p>
     <button class="bonkBtn" id="bonkBtn" disabled>BONK!</button>
     <p class="gHint">Tik als de omschrijver een woord van meer dan één lettergreep zegt. Het andere team krijgt dan −1.</p>
     <button class="secBtn" id="krantRetry" hidden style="padding-inline:20px">Opnieuw verbinden</button>
@@ -501,7 +502,7 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
 
 <script>
 (function(){
-const VERSION = "v9 · 23 okt 20:15";
+const VERSION = "v10 · 23 okt 20:20";
 document.querySelectorAll("[data-ver]").forEach(el => el.textContent = "BONK " + VERSION);
 
 const DEFAULT_CARDS = [
@@ -850,7 +851,7 @@ try { CID = sessionStorage.getItem("bonk-cid"); } catch(e){}
 if (!CID) { CID = Math.random().toString(36).slice(2, 10); try { sessionStorage.setItem("bonk-cid", CID); } catch(e){} }
 
 /* spel-telefoon */
-function hostState(){ return { t:"state", team:S.team, running, paused, secs:Math.ceil(remainingMs/1000), seq:cardSeq, lock:bonkLock, name:tn(S.team), ms:Math.round(remainingMs), dur:S.dur }; }
+function hostState(){ return { t:"state", team:S.team, running, paused, secs:Math.ceil(remainingMs/1000), seq:cardSeq, lock:bonkLock, name:tn(S.team), ms:Math.round(remainingMs), dur:S.dur, v:VERSION }; }
 function hostPresence(){
   if (role !== "host") return;
   const m = hostState();
@@ -969,7 +970,10 @@ function connectKrant(code){
       if (d.t === "ack") { const t = pendingBonks.get(d.id); if (t) { clearTimeout(t); pendingBonks.delete(d.id); } return; }
       if (d.t !== "state") return;
       if (typeof d.seq === "number") krantSeq = d.seq;
-      kTimer = { ms: Number(d.ms) || (Number(d.secs) || 0) * 1000, dur: (Number(d.dur) || 90) * 1000, live: !!(d.running && !d.paused), at: performance.now() };
+      const ms = Number(d.ms) || (Number(d.secs) || 0) * 1000;
+      if (!d.running) kMax = 0; else kMax = Math.max(kMax, ms);
+      kTimer = { ms, dur: Number(d.dur) ? Number(d.dur) * 1000 : (kMax || ms || 1), live: !!(d.running && !d.paused), at: performance.now() };
+      $("kVer").hidden = d.v === VERSION;
       $("kBar").hidden = !d.running; $("kBar").classList.toggle("still", !!d.paused);
       if (d.running && d.lock) { setKrantStatus("BONK! Volgend woord komt eraan…", false); return; }
       const team = (typeof d.name === "string" && d.name.trim()) ? d.name.trim().slice(0, 16) : `Team ${d.team === "B" ? "B" : "A"}`;
@@ -987,7 +991,7 @@ function connectKrant(code){
 var krantSeq;
 const bonkSeqs = new Map();   // BONK-id -> woord waarop getikt werd
 /* aftelbalk op de krant-telefoon, vloeiend tussen de updates door */
-var kTimer = null;
+var kTimer = null, kMax = 0;
 (function kTick(){
   if (role === "krant" && kTimer && !$("kBar").hidden) {
     const rem = kTimer.live ? Math.max(0, kTimer.ms - (performance.now() - kTimer.at)) : kTimer.ms;
