@@ -233,8 +233,9 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
 .logo{margin:0;font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:.06em;color:var(--fg)}
 .logo span{color:var(--a)}
 #gate.home .homeTop{align-items:flex-start}
-#gate.home .logo{font-size:clamp(64px,22vw,104px);line-height:.9;letter-spacing:.02em;color:var(--b);transform:rotate(-4deg);transform-origin:left bottom;text-shadow:0 6px 0 var(--ink)}
-#gate.home .logo span{color:var(--a)}
+.logo.big{font-size:clamp(72px,25vw,120px);line-height:.9;letter-spacing:.02em;color:var(--b);transform:rotate(-4deg);text-shadow:0 6px 0 var(--ink);text-align:center}
+.logo.big span{color:var(--a)}
+.setupTitle{margin:-6px 0 0;font-family:var(--display);font-weight:800;font-size:clamp(30px,9vw,40px);line-height:1}
 .iconBtn{flex:none;width:44px;height:44px;border-radius:50%;background:var(--raise);display:grid;place-items:center}
 .scoreDuo{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}
 .sd{display:flex;flex-direction:column;align-items:stretch;gap:4px;padding:10px 14px;border-radius:14px;background:var(--raise);border:2px solid transparent}
@@ -324,6 +325,26 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 .kWords b{font-family:var(--display);font-weight:800;font-size:20px;overflow-wrap:anywhere}
 #pauseOv{z-index:21}
 .bigBtn:disabled{background:var(--raise)!important;color:var(--muted);cursor:default}
+/* keuzescherm */
+#lobby{justify-content:flex-start;overflow-y:auto}
+#lobby .lobbyInner{margin:auto;gap:22px}
+.tagline{margin:-4px 0 4px;text-align:center;font-size:16px;line-height:1.45;color:var(--muted);text-wrap:balance}
+.choices{display:flex;flex-direction:column;gap:12px}
+.choice{display:flex;align-items:center;gap:16px;padding:18px;border-radius:var(--r);text-align:left;color:var(--ink);box-shadow:0 6px 0 var(--ink);transition:transform .12s}
+.choice:active{transform:translateY(4px);box-shadow:0 2px 0 var(--ink)}
+.choice.make{background:var(--a)}
+.choice.join{background:var(--b)}
+.chIcon{flex:none;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:rgba(27,42,46,.14);font-family:var(--display);font-weight:800;font-size:28px;line-height:1}
+.chText{display:flex;flex-direction:column;gap:3px;min-width:0}
+.chText b{font-family:var(--display);font-weight:800;font-size:24px;line-height:1.05}
+.chText small{font-size:14px;line-height:1.35;color:rgba(27,42,46,.78)}
+#lobby:not([hidden]) .lobbyInner > *{animation:rise .45s cubic-bezier(.2,.8,.3,1) both}
+#lobby:not([hidden]) .lobbyInner > :nth-child(2){animation-delay:.05s}
+#lobby:not([hidden]) .lobbyInner > :nth-child(3){animation-delay:.1s}
+#lobby:not([hidden]) .lobbyInner > :nth-child(n+4){animation-delay:.15s}
+/* nieuwe versie */
+.updBar{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom, 0px));z-index:60;transform:translateX(-50%);display:flex;align-items:center;gap:12px;width:max-content;max-width:calc(100% - 32px);padding:10px 10px 10px 16px;border-radius:999px;background:var(--fg);color:var(--ink);font-weight:700;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.35);animation:rise .4s both}
+.updBar button{padding:8px 14px;border-radius:999px;background:var(--a);color:var(--ink);font-weight:800}
 </style>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -378,6 +399,7 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
       </button>
     </div>
     <p class="gTitle turnOnly" id="gTitle"></p>
+    <h2 class="setupTitle homeOnly hostOnly">Nieuw spel</h2>
     <p class="gResult" id="gResult" hidden></p>
     <h1 class="gTeam turnOnly" id="gTeam">Team A</h1>
     <div class="scoreDuo">
@@ -396,8 +418,9 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
     </div>
     <button class="bigBtn" id="startBtn">Start</button>
     <div class="duo homeOnly hostOnly" id="duoHost">
+      <!-- spelcode voor het andere team -->
       <div class="duoText">
-        <b>Elk team een eigen telefoon</b>
+        <b>Laat het andere team meedoen</b>
         <span id="duoStatus">Het andere team opent BONK en tikt op <i>Meedoen</i> met deze code.</span>
       </div>
       <div class="duoCode"><div class="qrMini" id="qrMini"></div><span class="code small" id="duoCode">····</span></div>
@@ -405,13 +428,13 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
         <div class="seg mySeg"><button data-my="A" id="myA">Team A</button><button data-my="B" id="myB">Team B</button></div>
       </div>
     </div>
-    <button class="krantGate homeOnly hostOnly" id="gateJoinBtn"><span class="kgIcon" aria-hidden="true">BONK!</span><span class="kgText"><b>Meedoen</b><small>Speelt het andere team al op hun telefoon? Doe mee met hun code</small></span></button>
     <div class="duo guestOnly" id="duoGuest">
       <div class="duoText"><b id="guestTitle">Verbonden</b><span id="guestStatus"></span></div>
       <button class="ghost" id="guestRetry" hidden>Opnieuw</button><button class="ghost" id="leaveBtn">Verlaten</button>
     </div>
     <p class="note err" id="verNote" hidden>De andere telefoon heeft een andere versie van BONK. Herlaad de site op beide telefoons.</p>
     <div class="ghostRow homeOnly">
+      <button class="ghost hostOnly" id="gateBackBtn">← Terug</button>
       <button class="ghost" id="gateRulesBtn">Spelregels</button>
       <button class="ghost hostOnly" id="gateCardsBtn">Kaarten</button>
     </div>
@@ -421,6 +444,27 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
       <button class="installX" id="installClose" aria-label="Verbergen">✕</button>
     </div>
     <p class="ver homeOnly" data-ver></p>
+  </div>
+</section>
+
+<!-- Keuzescherm: maken of meedoen -->
+<section class="overlay" id="lobby" hidden>
+  <div class="gateInner lobbyInner">
+    <p class="logo big">BONK<span>!</span></p>
+    <p class="tagline">Omschrijf het woord met alleen woorden van één lettergreep. Fout? BONK!</p>
+    <div class="choices">
+      <button class="choice make" id="lobbyNew">
+        <span class="chIcon" aria-hidden="true">+</span>
+        <span class="chText"><b>Spel maken</b><small>Deze telefoon maakt het spel. Het andere team doet mee met een code.</small></span>
+      </button>
+      <button class="choice join" id="lobbyJoin">
+        <span class="chIcon" aria-hidden="true">→</span>
+        <span class="chText"><b>Meedoen</b><small>Het andere team heeft al een spel gemaakt? Vul hun code in.</small></span>
+      </button>
+    </div>
+    <button class="ghost" id="lobbyResume" hidden>Verder met vorig spel</button>
+    <div class="ghostRow"><button class="ghost" id="lobbyRules">Spelregels</button></div>
+    <p class="ver" data-ver></p>
   </div>
 </section>
 
@@ -561,6 +605,7 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 </div>
 
 <div class="toast" id="toast" aria-live="polite"></div>
+<div class="updBar" id="updBar" hidden><span>Nieuwe versie van BONK</span><button id="updBtn">Verversen</button></div>
 <div class="hurry" id="hurry" aria-hidden="true"></div>
 <div class="countOv" id="countOv" hidden><span id="countNum">3</span><p class="countSub" id="countSub"></p></div>
 <div class="stamp" id="stamp" hidden><span>TIJD!</span></div>
@@ -602,7 +647,7 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 
 <script>
 (function(){
-const VERSION = "v13 · 23 okt 21:15";
+const VERSION = "v14 · 23 okt 21:30";
 document.querySelectorAll("[data-ver]").forEach(el => el.textContent = "BONK " + VERSION);
 
 const DEFAULT_CARDS = [
@@ -929,6 +974,7 @@ $("defaultCardsBtn").onclick = ()=>{
 window.addEventListener("keydown", e=>{
   if (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT" || role === "guest" || !$("krantOv").hidden || !$("joinOv").hidden) return;
   if (!$("rules").hidden) { if (e.key === "Escape" || e.key === "Enter") closeRules(); return; }
+  if (!$("lobby").hidden) return;
   if (!$("gate").hidden) { if (e.key === "Enter") beginTurn(); return; }
   if (e.key === "p" || e.key === "P") { paused ? resume() : pause(); }
   if (paused || !$("menu").hidden) return;
@@ -1110,7 +1156,6 @@ function updateDuo(){
   $("myA").setAttribute("aria-pressed", String(myTeam === "A")); $("myB").setAttribute("aria-pressed", String(myTeam === "B"));
   $("duoStatus").innerHTML = n ? `<span class="ok">Verbonden.</span> ${esc(tn(other(myTeam)))} speelt op de andere telefoon.`
     : hostCode ? "Het andere team opent BONK en tikt op <i>Meedoen</i> met deze code." : "Spelcode ophalen…";
-  $("gateJoinBtn").hidden = n > 0;
 }
 
 /* --- spel-telefoon (host) --- */
@@ -1229,8 +1274,9 @@ function openJoin(){
 function joinGame(code){
   if (!hasPeer()) { $("joinOv").hidden = false; joinMsg(NOLIB); return; }
   role = "guest"; gCode = code; gWelcomed = false; gFailed = false; winTeam = null;
+  try { sessionStorage.setItem("bonk-join", code); } catch(e){}
   document.body.classList.add("guest");
-  stopAll(); closeMenu(); $("rules").hidden = true; $("joinOv").hidden = true; $("winOv").hidden = true;
+  stopAll(); closeMenu(); $("rules").hidden = true; $("joinOv").hidden = true; $("winOv").hidden = true; $("lobby").hidden = true;
   // deze telefoon maakt zelf geen spel meer
   try { peer && peer.destroy(); } catch(e){}
   peer = null; hostCode = null;
@@ -1327,7 +1373,7 @@ function tapScore(d){
   pendingTap = mirror.seq; setTimeout(() => { pendingTap = null; }, 1500);
   sendCmd({ c:"award", d, seq:mirror.seq });
 }
-function leaveGame(){ location.href = location.pathname; }
+function leaveGame(){ try { sessionStorage.removeItem("bonk-join"); } catch(e){} location.href = location.pathname; }
 
 /* hartslag: dode verbindingen opruimen en automatisch opnieuw verbinden */
 setInterval(() => {
@@ -1348,7 +1394,6 @@ document.addEventListener("visibilitychange", () => {
   if (role === "guest" && gCode && Date.now() - gLast > 4000) connectGuest(gCode);
 });
 
-$("gateJoinBtn").onclick = openJoin;
 $("krantBtn").onclick = openJoin;
 $("joinCancel").onclick = () => { $("joinOv").hidden = true; };
 $("joinCode").addEventListener("input", e => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4); });
@@ -1417,12 +1462,40 @@ fetch("words.json", { cache: "no-cache" })
 
 render();
 showGate(S.log.length ? "Verder spelen" : "Klaar om te spelen?");
-const qp = new URLSearchParams(location.search), qk = qp.get("join") || qp.get("krant");
+/* ---------- keuzescherm ---------- */
+function showLobby(){ $("lobbyResume").hidden = !S.log.length; $("lobby").hidden = false; }
+$("lobbyNew").onclick = () => {
+  audioOn();
+  if (S.log.length) { S.cards = shuffled(source()); S.idx = 0; cardSeq++; resetScores(); }
+  $("lobby").hidden = true;
+};
+$("lobbyResume").onclick = () => { $("lobby").hidden = true; };
+$("lobbyJoin").onclick = openJoin;
+$("lobbyRules").onclick = openRules;
+$("gateBackBtn").onclick = showLobby;
+
+/* ---------- nieuwere versie online? ---------- */
+let lastVerCheck = 0;
+function checkVersion(){
+  if (Date.now() - lastVerCheck < 60000) return; lastVerCheck = Date.now();
+  fetch(location.pathname + "?v=" + Date.now(), { cache:"no-store" }).then(r => r.ok ? r.text() : "").then(t => {
+    const m = t.match(/const VERSION = "([^"]+)"/);
+    if (m && m[1] !== VERSION) $("updBar").hidden = false;
+  }).catch(() => {});
+}
+$("updBtn").onclick = () => location.reload();
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && !running) checkVersion(); });
+setTimeout(checkVersion, 1500);
+
+const qp = new URLSearchParams(location.search);
+let qk = qp.get("join") || qp.get("krant");
+if (!qk) { try { qk = sessionStorage.getItem("bonk-join"); } catch(e){} }
 if (qk) {
   try { history.replaceState(null, "", location.pathname); } catch(e){}
   joinGame(qk.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4));
 } else {
   startHost();
+  showLobby();
   try { if (!localStorage.getItem("bonk-rules-seen")) $("rules").hidden = false; } catch(e){}
 }
 })();
