@@ -304,6 +304,26 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
 /* confetti-regen bij winst */
 .rain{position:fixed;top:-20px;z-index:44;width:10px;height:16px;border-radius:2px;pointer-events:none;animation:rain var(--t) linear var(--d) forwards}
 @keyframes rain{to{transform:translate(var(--x), calc(100vh + 40px)) rotate(var(--r))}}
+/* twee telefoons */
+body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
+.duo{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:14px;border-radius:var(--r);background:var(--raise)}
+.duoText{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;font-size:14px;line-height:1.4;color:var(--muted)}
+.duoText b{font-family:var(--display);font-weight:800;font-size:17px;color:var(--fg)}
+.duoText .ok{color:var(--good);font-weight:700}
+.duoCode{display:flex;flex-direction:column;align-items:center;gap:4px}
+.qrMini{padding:5px;background:var(--paper);border-radius:8px;line-height:0;width:86px;height:86px}
+.qrMini img,.qrMini canvas{width:76px!important;height:76px!important}
+.code.small{font-size:20px;letter-spacing:.18em}
+.duoMine{flex-basis:100%}
+.mySeg{grid-template-columns:1fr 1fr}
+.mySeg button{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-inline:8px}
+.duo.linked .duoCode{display:none}
+.kWords{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:340px}
+.kWords div{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:14px;background:var(--paper);color:var(--ink);text-align:center;min-width:0}
+.kWords span{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)}
+.kWords b{font-family:var(--display);font-weight:800;font-size:20px;overflow-wrap:anywhere}
+#pauseOv{z-index:21}
+.bigBtn:disabled{background:var(--raise)!important;color:var(--muted);cursor:default}
 </style>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -322,7 +342,7 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
 
   <div class="meta">
     <span><strong id="turnLabel">Team A</strong> · <span id="counter">kaart 1 / 40</span></span>
-    <span class="chip" id="krantChip" hidden>Krant verbonden</span>
+    <span class="chip" id="krantChip" hidden>2 telefoons</span>
     <button class="menuBtn" id="menuBtn" aria-label="Menu openen">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>Menu
     </button>
@@ -366,7 +386,7 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
       <label class="sd b"><input class="tnInput" id="nameB" maxlength="16" placeholder="Team B" autocomplete="off" spellcheck="false" aria-label="Naam team B"><b id="gsB">0</b></label>
     </div>
     <p class="namesHint homeOnly">Tik op een teamnaam om hem te veranderen</p>
-    <div class="setup homeOnly">
+    <div class="setup homeOnly hostOnly">
       <div class="setRow"><span>Spelen tot</span>
         <div class="seg seg4 tSeg"><button data-t="15">15</button><button data-t="30">30</button><button data-t="50">50</button><button data-t="0">Geen</button></div>
       </div>
@@ -375,12 +395,25 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
       </div>
     </div>
     <button class="bigBtn" id="startBtn">Start</button>
-    <button class="krantGate homeOnly" id="gateKrantBtn"><span class="kgIcon" aria-hidden="true">BONK!</span><span class="kgText"><b>Ik heb de krant</b><small>Tegenpartij? Tik hier op je eigen telefoon</small></span></button>
-    <p class="note err" id="gateKrantNote" hidden></p>
-    <p class="gHint homeOnly" id="gateCode" hidden></p>
+    <div class="duo homeOnly hostOnly" id="duoHost">
+      <div class="duoText">
+        <b>Elk team een eigen telefoon</b>
+        <span id="duoStatus">Het andere team opent BONK en tikt op <i>Meedoen</i> met deze code.</span>
+      </div>
+      <div class="duoCode"><div class="qrMini" id="qrMini"></div><span class="code small" id="duoCode">····</span></div>
+      <div class="setRow duoMine" id="duoMine" hidden><span>Deze telefoon is van</span>
+        <div class="seg mySeg"><button data-my="A" id="myA">Team A</button><button data-my="B" id="myB">Team B</button></div>
+      </div>
+    </div>
+    <button class="krantGate homeOnly hostOnly" id="gateJoinBtn"><span class="kgIcon" aria-hidden="true">BONK!</span><span class="kgText"><b>Meedoen</b><small>Speelt het andere team al op hun telefoon? Doe mee met hun code</small></span></button>
+    <div class="duo guestOnly" id="duoGuest">
+      <div class="duoText"><b id="guestTitle">Verbonden</b><span id="guestStatus"></span></div>
+      <button class="ghost" id="guestRetry" hidden>Opnieuw</button><button class="ghost" id="leaveBtn">Verlaten</button>
+    </div>
+    <p class="note err" id="verNote" hidden>De andere telefoon heeft een andere versie van BONK. Herlaad de site op beide telefoons.</p>
     <div class="ghostRow homeOnly">
       <button class="ghost" id="gateRulesBtn">Spelregels</button>
-      <button class="ghost" id="gateCardsBtn">Kaarten</button>
+      <button class="ghost hostOnly" id="gateCardsBtn">Kaarten</button>
     </div>
     <div class="installBar homeOnly" id="installBar" hidden>
       <span id="installText">Speel BONK als app: schermvullend en met een eigen icoon.</span>
@@ -425,7 +458,7 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
 
     <div class="sec">
       <h3>Nodig</h3>
-      <p class="lead" style="font-size:16px">Deze telefoon en een opgerolde krant: de knuppel.</p>
+      <p class="lead" style="font-size:16px">Een opgerolde krant: de knuppel. En een telefoon per team, of één telefoon die je doorgeeft.</p>
     </div>
 
     <div class="sec">
@@ -441,13 +474,13 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
       <h3>Een beurt</h3>
       <ol class="rules">
         <li><span>Maak twee teams, <b>A</b> en <b>B</b>. Kies in het menu tot hoeveel punten je speelt (standaard 30).</span></li>
-        <li><span>Het team aan de beurt kiest een omschrijver. Die pakt de telefoon. Iemand van de tegenpartij pakt de krant en mag meekijken.</span></li>
+        <li><span>Het team aan de beurt kiest een omschrijver. Die pakt de telefoon van het team. De tegenpartij pakt de krant en ziet op hun eigen telefoon het woord en de BONK-knop.</span></li>
         <li><span>Tik op <b>Start</b>. Kies het makkelijke of het moeilijke woord.</span></li>
         <li><span>Omschrijf het met alleen woorden van één lettergreep. Voor <i>fiets</i>: “twee wiel, trap, bel”.</span></li>
         <li><span>Geraden? Tik op die kaart. Er verschijnt meteen een nieuwe.</span></li>
         <li><span>Zeg je een woord van twee of meer lettergrepen? <b>BONK!</b> De krant mag je raken. Tik op <b>BONK!</b> voor −1.</span></li>
         <li><span>Kom je er niet uit, tik <b>Overslaan</b>.</span></li>
-        <li><span>Tijd op? Het andere team is aan de beurt, de krant gaat mee naar de tegenpartij.</span></li>
+        <li><span>Tijd op? Het andere team is aan de beurt. Met twee telefoons wisselen de schermen vanzelf; de krant gaat naar de tegenpartij.</span></li>
       </ol>
     </div>
 
@@ -466,14 +499,19 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="menuTitle">
     <div class="sheetHead"><h2 id="menuTitle">Menu</h2><button class="close" id="closeMenu" aria-label="Sluiten">✕</button></div>
 
-    <div class="sec">
+    <div class="sec guestOnly">
+      <p class="note">Instellingen, kaarten en punten regel je op de telefoon die het spel heeft gemaakt.</p>
+      <button class="secBtn" id="menuLeaveBtn">Spel verlaten</button>
+    </div>
+
+    <div class="sec hostOnly">
       <h3>Spelen tot</h3>
       <div class="seg seg4 tSeg" id="targetSeg">
         <button data-t="15">15</button><button data-t="30">30</button><button data-t="50">50</button><button data-t="0">Geen</button>
       </div>
     </div>
 
-    <div class="sec">
+    <div class="sec hostOnly">
       <h3>Tijd per beurt</h3>
       <div class="seg seg4 dSeg" id="durSeg">
         <button data-dur="30">30 s</button><button data-dur="60">60 s</button><button data-dur="90">90 s</button><button data-dur="120">120 s</button>
@@ -481,26 +519,26 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
       <p class="note" id="durNote" hidden>Je kunt de tijd aanpassen als er geen beurt loopt.</p>
     </div>
 
-    <div class="sec">
+    <div class="sec hostOnly">
       <h3>Spel</h3>
       <div class="list">
         <button class="secBtn" id="shuffleBtn">Kaarten schudden</button>
         <button class="secBtn" id="editBtn">Kaarten bewerken</button>
         <button class="secBtn danger" id="resetScoresBtn">Punten resetten</button>
         <button class="secBtn danger" id="resetAllBtn">Nieuw spel</button>
-        <button class="secBtn" id="menuRulesBtn" style="grid-column:1/-1">Spelregels</button>
       </div>
     </div>
+    <button class="secBtn" id="menuRulesBtn">Spelregels</button>
 
-    <div class="sec">
-      <h3>Krant op een tweede telefoon</h3>
-      <p class="note">Scan deze QR-code met de telefoon van de tegenpartij. Of open de site daar, tik op "Ik heb de krant" en typ de code.</p>
+    <div class="sec hostOnly">
+      <h3>Tweede telefoon</h3>
+      <p class="note">Laat het andere team deze QR-code scannen. Of open BONK op hun telefoon, tik op Meedoen en typ de code.</p>
       <div class="pairBox">
         <div class="qr" id="qr"></div>
-        <div><p class="note">Krant-code</p><div class="code" id="hostCode">····</div></div>
+        <div><p class="note">Spelcode</p><div class="code" id="hostCode">····</div></div>
       </div>
       <p class="note" id="roomNote">Verbinden met de koppelserver…</p>
-      <button class="secBtn" id="krantBtn">Deze telefoon is de krant</button>
+      <button class="secBtn" id="krantBtn">Meedoen met een ander spel</button>
     </div>
 
     <div class="sec" id="editor" hidden>
@@ -514,7 +552,7 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
       <p class="note" id="cardNote"></p>
     </div>
 
-    <div class="sec">
+    <div class="sec hostOnly">
       <h3>Puntenstapel</h3>
       <ul class="log" id="log"></ul>
     </div>
@@ -537,10 +575,10 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
 <section class="overlay" id="joinOv" hidden>
   <div class="krantInner">
     <p class="brand">BONK<span>!</span></p>
-    <h2 class="gTeam" style="font-size:clamp(34px,10vw,48px);color:var(--bad)">Ik heb de krant</h2>
-    <p class="gHint">Typ de krant-code die op de telefoon met de kaarten staat, onder de Start-knop. Of scan de QR-code in het menu van die telefoon.</p>
-    <input id="joinCode" class="codeInput" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="4" placeholder="ABCD" aria-label="Krant-code">
-    <button class="bigBtn" id="joinGo" style="background:var(--bad);color:#fff;width:100%">Verbinden</button>
+    <h2 class="gTeam" style="font-size:clamp(34px,10vw,48px);color:var(--b)">Meedoen</h2>
+    <p class="gHint">Typ de code die op het startscherm van de andere telefoon staat, of scan daar de QR-code. Deze telefoon wordt dan de telefoon van jullie team.</p>
+    <input id="joinCode" class="codeInput" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="4" placeholder="ABCD" aria-label="Spelcode">
+    <button class="bigBtn" id="joinGo" style="background:var(--b);width:100%">Verbinden</button>
     <p class="note err" id="joinMsg" hidden></p>
     <button class="ghost" id="joinCancel">Annuleren</button>
   </div>
@@ -550,19 +588,21 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
 <section class="overlay" id="krantOv" hidden>
   <div class="krantInner" id="krantInner">
     <p class="brand">BONK<span>!</span></p>
-    <p class="kStatus" id="kStatus">Zoeken naar de telefoon met de kaarten…</p>
+    <p class="kStatus" id="kStatus">Wachten…</p>
     <div class="kBar" id="kBar" hidden><div class="kFill" id="kFill"></div><span id="kSecs">90</span></div>
-    <p class="note err" id="kVer" hidden>De spel-telefoon heeft een andere versie van BONK. Herlaad de site op beide telefoons.</p>
+    <div class="kWords" id="kWords">
+      <div><span>Makkelijk</span><b id="kEasy">—</b></div>
+      <div><span>Moeilijk</span><b id="kHard">—</b></div>
+    </div>
     <button class="bonkBtn" id="bonkBtn" disabled>BONK!</button>
-    <p class="gHint">Tik als de omschrijver een woord van meer dan één lettergreep zegt. Het andere team krijgt dan −1.</p>
+    <p class="gHint">Zegt de omschrijver een woord van meer dan één lettergreep? Tik op BONK. Zij krijgen dan −1.</p>
     <button class="secBtn" id="krantRetry" hidden style="padding-inline:20px">Opnieuw verbinden</button>
-    <button class="ghost" id="krantExit">Stoppen met krant</button>
   </div>
 </section>
 
 <script>
 (function(){
-const VERSION = "v12 · 23 okt 20:40";
+const VERSION = "v13 · 23 okt 21:15";
 document.querySelectorAll("[data-ver]").forEach(el => el.textContent = "BONK " + VERSION);
 
 const DEFAULT_CARDS = [
@@ -583,7 +623,7 @@ let base = (Array.isArray(window.CARDS) && window.CARDS.length) ? window.CARDS :
 const S = { cards:[], idx:0, team:"A", score:{A:0,B:0}, dur:90, turnPts:0, log:[], custom:null, target:30, deckVer:0, names:{A:"",B:""} };
 
 try { const d = JSON.parse(localStorage.getItem(KEY) || "null"); if (d && typeof d === "object") Object.assign(S, d); } catch(e){}
-const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} };
+const save = () => { if (role === "guest") return; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} };
 const source = () => (S.custom && S.custom.length) ? S.custom : base;
 function shuffled(arr){ const a = arr.map(c=>({easy:c.easy, hard:c.hard})); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 if (!Array.isArray(S.cards) || !S.cards.length) { S.cards = shuffled(source()); S.idx = 0; }
@@ -610,12 +650,13 @@ function renderTimer(){
   $("timer").classList.toggle("low", running && secs <= 10);
   $("hurry").classList.toggle("on", running && !paused && secs <= 5);
 }
+function curCard(){ return role === "guest" ? (mirror.card || { easy:"—", hard:"—" }) : S.cards[S.idx]; }
 function renderWords(anim){
-  const c = S.cards[S.idx];
+  const c = curCard();
   for (const [id,txt] of [["easyText",c.easy],["hardText",c.hard]]) {
     const el = $(id); el.textContent = txt; el.classList.toggle("long", txt.length > 10);
   }
-  $("counter").textContent = `kaart ${S.idx+1} / ${S.cards.length}`;
+  $("counter").textContent = role === "guest" ? `kaart ${mirror.idx+1} / ${mirror.total}` : `kaart ${S.idx+1} / ${S.cards.length}`;
   const st = $("stage");
   st.classList.remove("hitting", "in-deal", "in-ok", "in-skip", "in-bonk");
   $("easyBtn").classList.remove("hit"); $("hardBtn").classList.remove("hit");
@@ -631,7 +672,7 @@ function render(){
   $("teamB").classList.toggle("active", S.team === "B");
   $("turnLabel").textContent = tn(S.team);
   $("tnA").textContent = tn("A"); $("tnB").textContent = tn("B");
-  renderWords(); renderTimer(); hostPresence();
+  renderWords(); renderTimer(); hostPresence(); updateRoleView();
 }
 
 /* ---------- sound, trilling, scherm aan ---------- */
@@ -660,6 +701,7 @@ function toast(text, kind, anchor){
 
 /* ---------- beurt ---------- */
 function showGate(title, result){
+  if (role !== "guest") gateInfo = { title, result: result || "" };
   $("gate").dataset.team = S.team;
   $("gTitle").textContent = title;
   $("gate").classList.toggle("home", !result);
@@ -667,38 +709,37 @@ function showGate(title, result){
   for (const t of ["A","B"]) { const inp = $("name"+t); if (document.activeElement !== inp) inp.value = S.names[t] || ""; }
   $("gsA").textContent = S.score.A; $("gsB").textContent = S.score.B;
   $("gsTarget").textContent = S.target ? `tot ${S.target}` : "";
-  $("startBtn").textContent = result ? `Start beurt · ${S.dur} s` : (S.log.length ? `Verder · ${tn(S.team)}` : `Start · ${tn(S.team)} begint`);
+  const mine = canStartHere();
+  $("startBtn").disabled = !mine;
+  $("startBtn").textContent = !mine ? (role === "guest" && !gWelcomed ? "Wachten op het spel…" : `Wachten tot ${tn(S.team)} start`)
+    : result ? `Start beurt · ${S.dur} s` : (S.log.length && role !== "guest" ? `Verder · ${tn(S.team)}` : `Start · ${tn(S.team)} begint`);
   renderDur();
   const r = $("gResult");
   if (result) { r.innerHTML = result; r.hidden = false; } else r.hidden = true;
-  const hideKrant = !!result || conns.size > 0;
-  $("gateKrantBtn").hidden = hideKrant; $("gateKrantNote").hidden = true;
-  $("gateCode").hidden = hideKrant || !hostCode;
+  updateDuo();
   if (result) $("installBar").hidden = true; else setupInstallBar();
   $("gate").hidden = false;
+  hostPresence();
 }
 function tick(){
+  if (paused) return;
   remainingMs = Math.max(0, endAt - performance.now());
   const sec = Math.ceil(remainingMs/1000);
-  if (sec !== lastSec) { lastSec = sec; if (sec <= 5 && sec > 0) beep(880, 0.08); }
+  if (sec !== lastSec) { lastSec = sec; if (sec <= 5 && sec > 0 && describingHere()) beep(880, 0.08); }
   renderTimer();
+  if (role === "guest") return;   // de spel-telefoon beslist wanneer de tijd op is
   if (remainingMs <= 0) endTurn(false);
 }
 var counting = false;
-function beginTurn(){
-  if (running || counting) return;
-  audioOn(); goFullscreen();
-  $("gate").hidden = true; counting = true;
-  const steps = ["3", "2", "1", "GO!"], num = $("countNum");
-  $("countSub").textContent = `${tn(S.team)}: omschrijver pakt de telefoon`;
-  $("countOv").hidden = false;
-  steps.forEach((txt, i) => setTimeout(() => {
-    num.textContent = txt; num.className = txt === "GO!" ? "go" : "";
-    void num.offsetWidth; num.classList.add("pop");
-    beep(txt === "GO!" ? 880 : 520, txt === "GO!" ? .25 : .1, .1);
-    try { navigator.vibrate && navigator.vibrate(txt === "GO!" ? 60 : 20); } catch(e){}
-  }, i * 650));
-  setTimeout(() => { $("countOv").hidden = true; counting = false; startTurn(); }, steps.length * 650 - 150);
+const COUNT_MS = 4 * 650 - 150;
+function beginTurn(remote){
+  if (role === "guest") { audioOn(); goFullscreen(); if (canStartHere()) { sendCmd({ c:"start" }); $("startBtn").disabled = true; } return; }
+  if (running || counting || winTeam) return;
+  if (remote !== true) { if (!canStartHere()) return; audioOn(); goFullscreen(); }
+  counting = true; gateInfo = null; $("gate").hidden = true;
+  fx("count");
+  hostPresence();
+  setTimeout(() => { counting = false; startTurn(); }, COUNT_MS);
 }
 function startTurn(){
   audioOn();
@@ -712,7 +753,6 @@ function startTurn(){
 function endTurn(manual){
   clearInterval(timerId); timerId = null; unlockBonk();
   running = false; paused = false; $("pauseOv").hidden = true;
-  if (!manual) { beep(220, 0.7, 0.18); try { navigator.vibrate && navigator.vibrate([300,120,300]); } catch(e){} }
   const prev = S.team, pts = S.turnPts;
   S.team = other(prev);
   S.idx = (S.idx + 1) % S.cards.length; cardSeq++;
@@ -721,68 +761,60 @@ function endTurn(manual){
   const go = () => showGate(manual ? "Beurt gestopt · volgende" : "Tijd is op! · volgende",
     `${esc(tn(prev))} haalde <b>${fmt(pts)}</b> ${Math.abs(pts)===1?"punt":"punten"} deze beurt.`);
   if (manual) return go();
-  $("stamp").hidden = false;
-  setTimeout(() => { $("stamp").hidden = true; go(); }, 1100);
+  fx("timeup");
+  setTimeout(go, 1100);
 }
-function nextCard(anim){ cardSeq++; S.idx = (S.idx + 1) % S.cards.length; renderWords(anim || "skip"); save(); hostPresence(); }
-function skipCard(){ if (running && !paused && !bonkLock && !busy) nextCard("skip"); }
+function nextCard(anim){ lastAnim = anim || "skip"; cardSeq++; S.idx = (S.idx + 1) % S.cards.length; renderWords(lastAnim); save(); hostPresence(); }
+function skipCard(){
+  if (role === "guest") { if (running && !paused && !bonkLock && pendingTap !== mirror.seq) { pendingTap = mirror.seq; setTimeout(() => { pendingTap = null; }, 1500); sendCmd({ c:"skip", seq:mirror.seq }); } return; }
+  if (running && !paused && !bonkLock && !busy) nextCard("skip");
+}
 /* Na een BONK even niets meer: geen tweede BONK, geen punten, pas daarna een nieuw woord */
 var cardSeq = 0, bonkLock = false, lockTok = 0, busy = false;
 const BONK_PAUSE = 1400;
 function setLockUi(on){ $("stage").classList.toggle("locked", on); document.querySelector(".actions").classList.toggle("locked", on); }
 function unlockBonk(){ lockTok++; bonkLock = false; busy = false; setLockUi(false); }
 function award(d){
-  if (!running || paused || bonkLock || busy) return;
+  if (role === "guest" || !running || paused || bonkLock || busy) return;
   const c = S.cards[S.idx];
   const applied = Math.max(d, -S.score[S.team]);   // nooit onder 0
   S.score[S.team] += applied; S.turnPts += applied;
   S.log.unshift({team:S.team, d:applied, word: d===3 ? c.hard : d===1 ? c.easy : `${c.easy} / ${c.hard}`});
   if (S.log.length > 200) S.log.length = 200;
   if (S.target && S.score[S.team] >= S.target) {
-    confetti(d === 3 ? $("hardBtn") : $("easyBtn"), "var(--b)");
+    fx("ok", { d, team:S.team });
     winGame(S.team); return;
   }
-  if (d < 0) bonkFx();
-  else {
-    // punten vliegen naar de score bovenin, zodat het nieuwe woord meteen leesbaar is
-    const box = $("team" + S.team);
-    toast(fmt(d), "pos", box); beep(660, 0.1, 0.08); setTimeout(()=>beep(990, 0.12, 0.08), 90);
-    confetti(box, d === 3 ? "var(--b)" : "var(--good)", 0.45);
-    box.classList.remove("bump"); void box.offsetWidth; box.classList.add("bump");
-  }
   if (d < 0) {
+    fx("bonk");
     bonkLock = true; setLockUi(true); render();
     const tok = ++lockTok;
     setTimeout(() => { if (tok !== lockTok) return; bonkLock = false; setLockUi(false); if (running) nextCard("bonk"); else hostPresence(); }, BONK_PAUSE);
     return;
   }
   // goed geraden: kaart licht groen op en vliegt weg, daarna klapt het nieuwe woord in
-  try { navigator.vibrate && navigator.vibrate(15); } catch(e){}
   busy = true; render();
-  const card = d === 3 ? $("hardBtn") : $("easyBtn");
-  $("stage").classList.add("hitting"); card.classList.add("hit");
+  fx("ok", { d, team:S.team });
   const tok = lockTok;
   setTimeout(() => { if (tok !== lockTok) return; busy = false; nextCard("ok"); }, 260);
 }
 function winGame(team){
-  stopAll(); save(); render();
-  beep(523, .15, .1); setTimeout(()=>beep(659, .15, .1), 150); setTimeout(()=>beep(784, .35, .12), 300);
-  const o = other(team);
-  setTimeout(() => {
-    $("winOv").dataset.team = team;
-    $("winTeam").textContent = tn(team);
-    $("winText").innerHTML = `wint met <b>${S.score[team]}</b> tegen <b>${S.score[o]}</b>`;
-    $("winOv").hidden = false;
-    confettiRain(90);
-    for (let i = 0; i < 3; i++) setTimeout(() => confetti($("winTeam"), i % 2 ? "var(--a)" : "var(--b)"), 200 + i * 250);
-  }, 500);
+  stopAll(); winTeam = team; save(); render();
+  setTimeout(() => { fx("win", { team }); hostPresence(); }, 500);
+}
+function newGame(){
+  winTeam = null; $("winOv").hidden = true;
+  S.cards = shuffled(source()); S.idx = 0; cardSeq++;
+  resetScores();
 }
 function pause(){
+  if (role === "guest") { if (running && !paused) sendCmd({ c:"pause" }); return; }
   if (!running || paused) return;
   paused = true; remainingMs = Math.max(0, endAt - performance.now());
   clearInterval(timerId); timerId = null; $("pauseOv").hidden = false; hostPresence();
 }
 function resume(){
+  if (role === "guest") { sendCmd({ c:"resume" }); return; }
   if (!running || !paused) return;
   paused = false; endAt = performance.now() + remainingMs;
   timerId = setInterval(tick, 200); $("pauseOv").hidden = true; hostPresence();
@@ -815,7 +847,7 @@ function renderDur(){
   });
   $("durNote").hidden = !running;
 }
-function openMenu(){ if (running && !paused) pause(); renderLog(); renderDur(); $("editor").hidden = true; $("menu").hidden = false; }
+function openMenu(){ if (role !== "guest" && running && !paused) pause(); renderLog(); renderDur(); $("editor").hidden = true; $("menu").hidden = false; }
 function closeMenu(){ $("menu").hidden = true; }
 
 function confirmTap(btn, label, fn){
@@ -824,23 +856,23 @@ function confirmTap(btn, label, fn){
   setTimeout(()=>{ btn.classList.remove("armed"); btn.textContent = label; }, 3000);
 }
 function resetScores(){
-  stopAll(); S.score = {A:0,B:0}; S.log = []; S.team = "A"; S.turnPts = 0;
+  stopAll(); winTeam = null; S.score = {A:0,B:0}; S.log = []; S.team = "A"; S.turnPts = 0;
   save(); render(); renderLog(); showGate("Klaar om te spelen?");
 }
 
 /* ---------- events ---------- */
 $("startBtn").onclick = beginTurn;
-$("easyBtn").onclick = ()=>award(1);
-$("hardBtn").onclick = ()=>award(3);
-$("minusBtn").onclick = ()=>award(-1);
+$("easyBtn").onclick = ()=>tapScore(1);
+$("hardBtn").onclick = ()=>tapScore(3);
+$("minusBtn").onclick = ()=>tapScore(-1);
 $("skipBtn").onclick = skipCard;
 $("pauseBtn").onclick = pause;
 $("resumeBtn").onclick = resume;
-$("stopBtn").onclick = ()=>endTurn(true);
+$("stopBtn").onclick = ()=>{ if (role === "guest") sendCmd({ c:"stop" }); else endTurn(true); };
 $("menuBtn").onclick = openMenu;
 $("gateMenuBtn").onclick = openMenu;
 $("closeMenu").onclick = closeMenu;
-function openRules(){ if (running && !paused) pause(); $("rules").hidden = false; }
+function openRules(){ if (role !== "guest" && running && !paused) pause(); $("rules").hidden = false; }
 function closeRules(){ $("rules").hidden = true; try { localStorage.setItem("bonk-rules-seen", "1"); } catch(e){} }
 $("gateRulesBtn").onclick = openRules;
 $("menuRulesBtn").onclick = openRules;
@@ -851,21 +883,24 @@ $("menu").addEventListener("click", e=>{ if (e.target === $("menu")) closeMenu()
 
 document.addEventListener("click", e=>{
   const t = e.target.closest(".tSeg button"), d = e.target.closest(".dSeg button");
+  if ((t || d) && role === "guest") return;
   if (t) { S.target = +t.dataset.t; save(); renderDur(); $("gsTarget").textContent = S.target ? `tot ${S.target}` : ""; }
   if (d && !running) { S.dur = +d.dataset.dur; remainingMs = S.dur*1000; save(); renderDur(); renderTimer(); }
 });
 for (const t of ["A","B"]) {
   $("name"+t).addEventListener("input", e => {
     S.names[t] = e.target.value.slice(0, 16); save();
+    if (role === "guest") sendCmd({ c:"name", team:t, v:S.names[t] });
     $("tnA").textContent = tn("A"); $("tnB").textContent = tn("B"); $("turnLabel").textContent = tn(S.team);
     $("gTeam").textContent = tn(S.team);
-    if ($("gate").classList.contains("home")) $("startBtn").textContent = S.log.length ? `Verder · ${tn(S.team)}` : `Start · ${tn(S.team)} begint`;
+    if (gateInfo || role === "guest") updateDuo();
+    if ($("gate").classList.contains("home") && canStartHere()) $("startBtn").textContent = S.log.length && role !== "guest" ? `Verder · ${tn(S.team)}` : `Start · ${tn(S.team)} begint`;
     hostPresence();
   });
   $("name"+t).addEventListener("keydown", e => { if (e.key === "Enter") e.target.blur(); });
 }
 $("gateCardsBtn").onclick = ()=>{ openMenu(); $("editBtn").click(); setTimeout(()=>$("editor").scrollIntoView({block:"start"}), 50); };
-$("newGameBtn").onclick = ()=>{ $("winOv").hidden = true; S.cards = shuffled(source()); S.idx = 0; resetScores(); };
+$("newGameBtn").onclick = ()=>{ if (role === "guest") sendCmd({ c:"newgame" }); else newGame(); };
 $("winMenuBtn").onclick = ()=>{ openMenu(); };
 
 $("shuffleBtn").onclick = ()=>{ S.cards = shuffled(source()); S.idx = 0; save(); render(); closeMenu(); toast("Geschud", "info"); };
@@ -892,7 +927,7 @@ $("defaultCardsBtn").onclick = ()=>{
 };
 
 window.addEventListener("keydown", e=>{
-  if (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT" || role === "krant" || !$("joinOv").hidden) return;
+  if (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT" || role === "guest" || !$("krantOv").hidden || !$("joinOv").hidden) return;
   if (!$("rules").hidden) { if (e.key === "Escape" || e.key === "Enter") closeRules(); return; }
   if (!$("gate").hidden) { if (e.key === "Enter") beginTurn(); return; }
   if (e.key === "p" || e.key === "P") { paused ? resume() : pause(); }
@@ -944,13 +979,18 @@ function confetti(el, color, spread){
     document.body.appendChild(s); setTimeout(()=>s.remove(), 800); }
 }
 
-/* ---------- krant op tweede telefoon (PeerJS) ---------- */
-var role = "host", lastPresSecs = null, lastBonk = 0;
-var peer = null, hostCode = null, krantPeer = null, krantConn = null, krantCode = "";
-var krantLast = 0, krantConnecting = false;
+/* ---------- twee telefoons (PeerJS) ----------
+   De telefoon die het spel maakt (host) houdt de spelstand bij en stuurt die naar de andere telefoon (gast).
+   Wie aan de beurt is ziet de kaarten; de andere telefoon toont het woord en de BONK-knop. */
+var role = "host", myTeam = "A", lastPresSecs = null, lastBonk = 0;
+var peer = null, hostCode = null, gPeer = null, gConn = null, gCode = "";
+var gLast = 0, gConnecting = false, gWelcomed = false, gFailed = false, pendingTap = null;
+var gateInfo = null, winTeam = null, lastAnim = "skip";
+var mirror = { card:null, idx:0, total:0, seq:-1, v:null };
 const conns = new Map();          // verbinding -> { cid, last }
-const lastBonkId = new Map();     // krant-telefoon -> laatst verwerkte BONK
+const lastBonkId = new Map();     // telefoon -> laatst verwerkte BONK
 const pendingBonks = new Map();   // BONK-id -> timer (wacht op bevestiging)
+const bonkSeqs = new Map();       // BONK-id -> woord waarop getikt werd
 const ALPH = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const PFX = "bonk-spel-hm-";
 const NET_ERR = ["network", "server-error", "socket-error", "socket-closed"];
@@ -965,175 +1005,329 @@ const NOLIB = "Kon de verbindingsdienst niet laden. Check je internet en herlaad
 let CID = null;
 try { CID = sessionStorage.getItem("bonk-cid"); } catch(e){}
 if (!CID) { CID = Math.random().toString(36).slice(2, 10); try { sessionStorage.setItem("bonk-cid", CID); } catch(e){} }
+try { const m = localStorage.getItem("bonk-myteam"); if (m === "A" || m === "B") myTeam = m; } catch(e){}
 
-/* spel-telefoon */
-function hostState(){ return { t:"state", team:S.team, running, paused, secs:Math.ceil(remainingMs/1000), seq:cardSeq, lock:bonkLock, name:tn(S.team), ms:Math.round(remainingMs), dur:S.dur, v:VERSION }; }
-function hostPresence(){
-  if (role !== "host") return;
-  const m = hostState();
-  for (const c of conns.keys()) { try { if (c.open) c.send(m); } catch(e){} }
+const linked = () => role === "host" && conns.size > 0;
+const guestOnline = () => !!(gConn && gConn.open && Date.now() - gLast < 8000);
+function describingHere(){ return role === "guest" ? S.team === myTeam : (!linked() || S.team === myTeam); }
+function canStartHere(){ return role === "guest" ? (gWelcomed && guestOnline() && S.team === myTeam) : (!linked() || S.team === myTeam); }
+
+/* --- effecten op alle telefoons tegelijk --- */
+function fx(k, data){
+  const m = Object.assign({ t:"fx", k }, data || {});
+  playFx(m);
+  if (role === "host") sendAll(m);
 }
+function playFx(m){
+  if (m.k === "ok") {
+    const team = m.team === "B" ? "B" : "A", d = Number(m.d) === 3 ? 3 : 1, box = $("team" + team);
+    toast(fmt(d), "pos", box); beep(660, 0.1, 0.08); setTimeout(() => beep(990, 0.12, 0.08), 90);
+    confetti(box, d === 3 ? "var(--b)" : "var(--good)", 0.45);
+    box.classList.remove("bump"); void box.offsetWidth; box.classList.add("bump");
+    if ($("krantOv").hidden) {
+      try { navigator.vibrate && navigator.vibrate(15); } catch(e){}
+      const card = d === 3 ? $("hardBtn") : $("easyBtn");
+      $("stage").classList.add("hitting"); card.classList.add("hit");
+    }
+  } else if (m.k === "bonk") {
+    bonkFx($("krantOv").hidden ? null : $("krantInner"));
+  } else if (m.k === "count") {
+    runCountdown();
+  } else if (m.k === "timeup") {
+    beep(220, 0.7, 0.18); try { navigator.vibrate && navigator.vibrate([300,120,300]); } catch(e){}
+    $("hurry").classList.remove("on");
+    $("stamp").hidden = false; setTimeout(() => { $("stamp").hidden = true; }, 1100);
+  } else if (m.k === "win") {
+    fillWin(m.team === "B" ? "B" : "A"); $("winOv").hidden = false;
+    beep(523, .15, .1); setTimeout(() => beep(659, .15, .1), 150); setTimeout(() => beep(784, .35, .12), 300);
+    confettiRain(90);
+    for (let i = 0; i < 3; i++) setTimeout(() => confetti($("winTeam"), i % 2 ? "var(--a)" : "var(--b)"), 200 + i * 250);
+  }
+}
+function fillWin(team){
+  $("winOv").dataset.team = team;
+  $("winTeam").textContent = tn(team);
+  $("winText").innerHTML = `wint met <b>${S.score[team]}</b> tegen <b>${S.score[other(team)]}</b>`;
+  $("newGameBtn").disabled = role === "guest" && !guestOnline();
+}
+function runCountdown(){
+  $("gate").hidden = true; $("winOv").hidden = true;
+  const steps = ["3", "2", "1", "GO!"], num = $("countNum");
+  $("countSub").textContent = describingHere() ? `${tn(S.team)}: omschrijver pakt de telefoon` : `${tn(S.team)} is aan de beurt. Pak de krant!`;
+  $("countOv").hidden = false;
+  steps.forEach((txt, i) => setTimeout(() => {
+    num.textContent = txt; num.className = txt === "GO!" ? "go" : "";
+    void num.offsetWidth; num.classList.add("pop");
+    beep(txt === "GO!" ? 880 : 520, txt === "GO!" ? .25 : .1, .1);
+    try { navigator.vibrate && navigator.vibrate(txt === "GO!" ? 60 : 20); } catch(e){}
+  }, i * 650));
+  setTimeout(() => { $("countOv").hidden = true; }, COUNT_MS);
+}
+
+/* --- wat deze telefoon nu laat zien: kaarten of krant --- */
+function updateRoleView(){
+  const watch = (running || counting) && !describingHere();
+  $("krantOv").hidden = !watch;
+  $("krantChip").hidden = !(linked() || (role === "guest" && guestOnline()));
+  if (!watch) return;
+  const c = curCard();
+  $("kEasy").textContent = c.easy; $("kHard").textContent = c.hard;
+  $("kBar").hidden = !running; $("kBar").classList.toggle("still", paused);
+  let txt, on = false;
+  if (role === "guest" && !guestOnline()) txt = "Verbinding kwijt. Opnieuw verbinden…";
+  else if (!running) txt = `${tn(S.team)} maakt zich klaar…`;
+  else if (paused) txt = "Pauze";
+  else if (bonkLock) txt = "BONK! Volgend woord komt eraan…";
+  else { txt = `${tn(S.team)} omschrijft`; on = true; }
+  setKrantStatus(txt, on);
+}
+function setKrantStatus(text, enabled){ $("kStatus").textContent = text; $("bonkBtn").disabled = !enabled; }
+(function kTick(){
+  if (!$("krantOv").hidden && !$("kBar").hidden) {
+    const dur = S.dur * 1000;
+    const rem = running ? (paused ? remainingMs : Math.max(0, endAt - performance.now())) : dur;
+    $("kFill").style.width = Math.min(100, rem / dur * 100) + "%";
+    $("kSecs").textContent = Math.ceil(rem / 1000);
+    $("kBar").classList.toggle("low", running && !paused && rem <= 10000);
+  }
+  requestAnimationFrame(kTick);
+})();
+function updateDuo(){
+  if (role === "guest") {
+    $("guestTitle").textContent = gWelcomed ? `Deze telefoon: ${tn(myTeam)}` : `Verbinden met spel ${gCode}…`;
+    $("guestStatus").textContent = gFailed ? gFailed
+      : !gWelcomed ? "Even geduld…"
+      : guestOnline() ? `Verbonden met spel ${gCode}. Instellingen en kaarten regel je op de andere telefoon.`
+      : "Verbinding kwijt. Opnieuw verbinden…";
+    $("guestRetry").hidden = !gFailed;
+    return;
+  }
+  const n = conns.size;
+  $("duoHost").classList.toggle("linked", n > 0);
+  $("duoCode").textContent = hostCode || "····";
+  $("duoMine").hidden = !n;
+  $("myA").textContent = tn("A"); $("myB").textContent = tn("B");
+  $("myA").setAttribute("aria-pressed", String(myTeam === "A")); $("myB").setAttribute("aria-pressed", String(myTeam === "B"));
+  $("duoStatus").innerHTML = n ? `<span class="ok">Verbonden.</span> ${esc(tn(other(myTeam)))} speelt op de andere telefoon.`
+    : hostCode ? "Het andere team opent BONK en tikt op <i>Meedoen</i> met deze code." : "Spelcode ophalen…";
+  $("gateJoinBtn").hidden = n > 0;
+}
+
+/* --- spel-telefoon (host) --- */
+function stateMsg(){
+  const c = S.cards[S.idx];
+  return { t:"state", v:VERSION, team:S.team, running, paused, counting,
+    ms: Math.round(running && !paused ? Math.max(0, endAt - performance.now()) : remainingMs),
+    dur:S.dur, seq:cardSeq, lock:bonkLock, anim:lastAnim, card:{ easy:c.easy, hard:c.hard }, idx:S.idx, total:S.cards.length,
+    score:S.score, names:S.names, target:S.target, gate:gateInfo, win:winTeam };
+}
+function sendAll(m){ for (const c of conns.keys()) { try { if (c.open) c.send(m); } catch(e){} } }
+function hostPresence(){ if (role === "host" && conns.size) sendAll(stateMsg()); }
+function welcome(c){ try { c.send({ t:"welcome", team:other(myTeam) }); c.send(stateMsg()); } catch(e){} }
 function dropConn(c){
   if (!conns.has(c)) return;
   conns.delete(c); try { c.close(); } catch(e){}
   updateHostUi();
 }
 function updateHostUi(){
-  const n = conns.size;
-  $("krantChip").hidden = role !== "host" || !n;
-  if (n) { $("gateKrantBtn").hidden = true; $("gateCode").hidden = true; }
-  $("krantChip").textContent = n > 1 ? `${n} kranten verbonden` : "Krant verbonden";
-  if (hostCode) $("roomNote").textContent = n ? `${n === 1 ? "1 krant-telefoon" : n + " krant-telefoons"} verbonden.` : "Klaar. Nog geen krant-telefoon verbonden.";
+  if (role !== "host") return;
+  $("roomNote").textContent = !hostCode ? $("roomNote").textContent
+    : conns.size ? `Verbonden met de andere telefoon.` : "Klaar. Nog geen tweede telefoon verbonden.";
+  updateDuo();
+  if (!$("gate").hidden && gateInfo) showGate(gateInfo.title, gateInfo.result);
+  updateRoleView();
 }
-function joinUrl(){ return location.origin + location.pathname + "?krant=" + hostCode; }
+function joinUrl(){ return location.origin + location.pathname + "?join=" + hostCode; }
 function showCode(){
   $("hostCode").textContent = hostCode;
-  $("gateCode").innerHTML = `Krant-code van dit spel: <b>${hostCode}</b>`;
-  $("gateCode").hidden = !$("gResult").hidden || conns.size > 0;
-  const q = $("qr"); q.innerHTML = "";
-  try { new QRCode(q, { text: joinUrl(), width: 132, height: 132, colorDark: "#1b2a2e", colorLight: "#f7f1e4", correctLevel: QRCode.CorrectLevel.M }); } catch(e){}
+  for (const [id, size] of [["qr", 132], ["qrMini", 76]]) {
+    const q = $(id); q.innerHTML = "";
+    try { new QRCode(q, { text: joinUrl(), width: size, height: size, colorDark: "#1b2a2e", colorLight: "#f7f1e4", correctLevel: QRCode.CorrectLevel.M }); } catch(e){}
+  }
+  updateDuo();
+}
+function handleCmd(d){
+  const gt = other(myTeam);
+  switch (d.c) {
+    case "start":  if (!running && !counting && gateInfo && !winTeam && S.team === gt) beginTurn(true); break;
+    case "award":  if (running && S.team === gt && Number(d.seq) === cardSeq && [1,3,-1].includes(Number(d.d))) award(Number(d.d)); break;
+    case "skip":   if (S.team === gt && Number(d.seq) === cardSeq) skipCard(); break;
+    case "pause":  if (S.team === gt) pause(); break;
+    case "resume": resume(); break;
+    case "stop":   if (running) endTurn(true); break;
+    case "name":   if (d.team === "A" || d.team === "B") { S.names[d.team] = String(d.v || "").slice(0, 16); save(); render(); if (!$("gate").hidden && gateInfo) showGate(gateInfo.title, gateInfo.result); } break;
+    case "newgame": if (winTeam) newGame(); break;
+  }
 }
 function startHost(tries){
   tries = tries || 0;
-  if (!hasPeer()) { $("roomNote").textContent = NOLIB; return; }
+  if (!hasPeer()) { $("roomNote").textContent = NOLIB; $("duoStatus").textContent = NOLIB; return; }
   let code = null;
   try { code = localStorage.getItem("bonk-code"); } catch(e){}
   if (!code || tries >= 4) code = newCode();
   const p = new Peer(PFX + code, PEER_OPTS);
   p.on("open", () => {
+    if (role !== "host") { try { p.destroy(); } catch(e){} return; }
     peer = p; hostCode = code;
     try { localStorage.setItem("bonk-code", code); } catch(e){}
     showCode(); updateHostUi();
   });
   p.on("connection", c => {
-    c.on("open", () => { conns.set(c, { cid:null, last:Date.now() }); try { c.send(hostState()); } catch(e){} updateHostUi(); });
+    c.on("open", () => { if (role !== "host") { try { c.close(); } catch(e){} return; } conns.set(c, { cid:null, last:Date.now() }); welcome(c); updateHostUi(); });
     c.on("data", d => {
       const info = conns.get(c); if (!info || !d) return;
       info.last = Date.now();
       if (d.cid && info.cid !== String(d.cid)) {
         info.cid = String(d.cid);
-        // dezelfde krant-telefoon opnieuw verbonden: oude verbinding opruimen
+        // dezelfde telefoon opnieuw verbonden: oude verbinding opruimen
         for (const [o, oi] of conns) if (o !== c && oi.cid === info.cid) dropConn(o);
       }
+      if (d.t === "hello") { welcome(c); return; }   // ook bij een trage verbinding krijgt de gast zijn team
       if (d.t === "bonk") {
         try { c.send({ t:"ack", id:d.id }); } catch(e){}
         const key = info.cid || "?", id = Number(d.id) || 0;
         if (id <= (lastBonkId.get(key) || 0)) return;   // al verwerkt (opnieuw verstuurd)
         lastBonkId.set(key, id);
-        // alleen een BONK op het woord dat nu in beeld is; een tweede BONK op hetzelfde woord telt niet
-        if (d.seq !== undefined && Number(d.seq) !== cardSeq) return;
-        if (role === "host" && running && !paused) award(-1);
-      }
+        // alleen de tegenpartij BONKt, en alleen op het woord dat nu in beeld is
+        if (S.team === other(myTeam)) return;
+        if (d.seq !== undefined && d.seq !== null && Number(d.seq) !== cardSeq) return;
+        if (running && !paused) award(-1);
+      } else if (d.t === "cmd") handleCmd(d);
     });
     c.on("close", () => dropConn(c));
     c.on("error", () => dropConn(c));
   });
   p.on("disconnected", () => { setTimeout(() => { try { if (!p.destroyed && p.disconnected) p.reconnect(); } catch(e){} }, 1000); });
   p.on("error", err => {
+    if (role !== "host") return;
     if (err.type === "unavailable-id" && tries < 7) {
       // Na herladen houdt de koppelserver de oude code nog even vast: eerst dezelfde code opnieuw proberen
       try { p.destroy(); } catch(e){}
-      $("roomNote").textContent = "Krant-code ophalen…";
+      $("roomNote").textContent = "Spelcode ophalen…";
       setTimeout(() => startHost(tries + 1), tries < 4 ? 2000 : 0);
     } else if (NET_ERR.includes(err.type) && !hostCode) {
       $("roomNote").textContent = "Geen verbinding met de koppelserver. Herlaad de pagina om het opnieuw te proberen.";
+      $("duoStatus").textContent = "Geen verbinding met de koppelserver. Je kunt wel met één telefoon spelen.";
     }
   });
 }
+function setMyTeam(t){
+  if (running || counting || (t !== "A" && t !== "B")) return;
+  myTeam = t; try { localStorage.setItem("bonk-myteam", t); } catch(e){}
+  for (const c of conns.keys()) welcome(c);
+  updateDuo(); if (!$("gate").hidden && gateInfo) showGate(gateInfo.title, gateInfo.result);
+}
 
-/* krant-telefoon */
-function setKrantStatus(text, enabled){ $("kStatus").textContent = text; $("bonkBtn").disabled = !enabled; }
-function krantFail(msg){ krantConnecting = false; setKrantStatus(msg, false); $("krantRetry").hidden = false; }
+/* --- team-telefoon (gast) --- */
+function sendCmd(m){ if (gConn && gConn.open) { try { gConn.send(Object.assign({ t:"cmd", cid:CID }, m)); } catch(e){} } }
 function joinMsg(t){ const m = $("joinMsg"); m.textContent = t; m.hidden = false; }
 function openJoin(){
   if (running) { $("roomNote").textContent = "Stop eerst de beurt op deze telefoon."; return; }
   closeMenu(); $("joinMsg").hidden = true; $("joinOv").hidden = false;
   setTimeout(() => $("joinCode").focus(), 60);
 }
-function getKrantPeer(cb){
-  if (!krantPeer || krantPeer.destroyed) {
-    krantPeer = new Peer(PEER_OPTS);
-    krantPeer.on("error", err => {
-      if (role !== "krant") return;
-      if (err.type === "peer-unavailable") krantFail(`Geen spel gevonden met code ${krantCode}. Check de code op de spel-telefoon.`);
-      else if (NET_ERR.includes(err.type)) krantFail("Geen verbinding met de koppelserver. Check je internet.");
-    });
-    krantPeer.on("disconnected", () => { setTimeout(() => { try { if (!krantPeer.destroyed && krantPeer.disconnected) krantPeer.reconnect(); } catch(e){} }, 1000); });
-  } else if (krantPeer.disconnected) {
-    try { krantPeer.reconnect(); } catch(e){}
-  }
-  if (krantPeer.open) cb(); else krantPeer.once("open", cb);
+function joinGame(code){
+  if (!hasPeer()) { $("joinOv").hidden = false; joinMsg(NOLIB); return; }
+  role = "guest"; gCode = code; gWelcomed = false; gFailed = false; winTeam = null;
+  document.body.classList.add("guest");
+  stopAll(); closeMenu(); $("rules").hidden = true; $("joinOv").hidden = true; $("winOv").hidden = true;
+  // deze telefoon maakt zelf geen spel meer
+  try { peer && peer.destroy(); } catch(e){}
+  peer = null; hostCode = null;
+  mirror = { card:{ easy:"—", hard:"—" }, idx:0, total:0, seq:-1, v:null };
+  showGate("Meedoen", "");
+  updateDuo();
+  connectGuest(code);
 }
-function connectKrant(code){
-  krantConnecting = true; krantLast = Date.now();
-  $("krantRetry").hidden = true;
-  setKrantStatus(`Verbinden met spel ${code}…`, false);
-  getKrantPeer(() => {
-    if (role !== "krant") return;
-    try { krantConn && krantConn.close(); } catch(e){}
-    const c = krantPeer.connect(PFX + code, { reliable: true });
-    krantConn = c;
-    const fail = setTimeout(() => { if (krantConn === c && !c.open && role === "krant") krantFail(`Kan spel ${code} niet bereiken. Probeer het opnieuw.`); }, 12000);
+function guestFail(msg){ gConnecting = false; gFailed = msg; updateDuo(); $("krantRetry").hidden = false; updateRoleView(); }
+function getGuestPeer(cb){
+  if (!gPeer || gPeer.destroyed) {
+    gPeer = new Peer(PEER_OPTS);
+    gPeer.on("error", err => {
+      if (role !== "guest") return;
+      if (err.type === "peer-unavailable") guestFail(`Geen spel gevonden met code ${gCode}. Check de code op de andere telefoon.`);
+      else if (NET_ERR.includes(err.type)) guestFail("Geen verbinding met de koppelserver. Check je internet.");
+    });
+    gPeer.on("disconnected", () => { setTimeout(() => { try { if (!gPeer.destroyed && gPeer.disconnected) gPeer.reconnect(); } catch(e){} }, 1000); });
+  } else if (gPeer.disconnected) {
+    try { gPeer.reconnect(); } catch(e){}
+  }
+  if (gPeer.open) cb(); else gPeer.once("open", cb);
+}
+function connectGuest(code){
+  gConnecting = true; gFailed = false; gLast = Date.now();
+  $("krantRetry").hidden = true; updateDuo();
+  getGuestPeer(() => {
+    if (role !== "guest") return;
+    try { gConn && gConn.close(); } catch(e){}
+    const c = gPeer.connect(PFX + code, { reliable: true });
+    gConn = c;
+    const fail = setTimeout(() => { if (gConn === c && !c.open && role === "guest") guestFail(`Kan spel ${code} niet bereiken. Probeer het opnieuw.`); }, 12000);
     c.on("open", () => {
-      clearTimeout(fail); krantConnecting = false; krantLast = Date.now();
-      setKrantStatus("Verbonden. Wachten op het spel…", false);
+      clearTimeout(fail); gConnecting = false; gLast = Date.now();
       try { c.send({ t:"hello", cid:CID }); } catch(e){}
       for (const id of [...pendingBonks.keys()]) { clearTimeout(pendingBonks.get(id)); sendBonk(id); }
+      updateDuo();
     });
     c.on("data", d => {
-      if (krantConn !== c || !d) return;
-      krantLast = Date.now();
+      if (gConn !== c || !d) return;
+      gLast = Date.now();
       if (d.t === "ack") { const t = pendingBonks.get(d.id); if (t) { clearTimeout(t); pendingBonks.delete(d.id); } return; }
-      if (d.t !== "state") return;
-      if (typeof d.seq === "number") krantSeq = d.seq;
-      const ms = Number(d.ms) || (Number(d.secs) || 0) * 1000;
-      if (!d.running) kMax = 0; else kMax = Math.max(kMax, ms);
-      kTimer = { ms, dur: Number(d.dur) ? Number(d.dur) * 1000 : (kMax || ms || 1), live: !!(d.running && !d.paused), at: performance.now() };
-      $("kVer").hidden = d.v === VERSION;
-      $("kBar").hidden = !d.running; $("kBar").classList.toggle("still", !!d.paused);
-      if (d.running && d.lock) { setKrantStatus("BONK! Volgend woord komt eraan…", false); return; }
-      const team = (typeof d.name === "string" && d.name.trim()) ? d.name.trim().slice(0, 16) : `Team ${d.team === "B" ? "B" : "A"}`;
-      if (d.running && !d.paused) setKrantStatus(`${team} omschrijft`, true);
-      else setKrantStatus(d.running ? "Pauze" : `Wachten tot ${team} start`, false);
+      if (d.t === "welcome") { myTeam = d.team === "A" ? "A" : "B"; gWelcomed = true; updateDuo(); return; }
+      if (d.t === "state") return applyState(d);
+      if (d.t === "fx") return playFx(d);
     });
     c.on("close", () => {
-      if (krantConn !== c || role !== "krant") return;
-      krantConnecting = false; krantLast = 0;   // de hartslag hieronder verbindt direct opnieuw
-      setKrantStatus("Verbinding kwijt. Opnieuw verbinden…", false);
+      if (gConn !== c || role !== "guest") return;
+      gConnecting = false; gLast = 0;   // de hartslag hieronder verbindt direct opnieuw
+      updateDuo(); updateRoleView();
     });
     c.on("error", () => {});
   });
 }
-var krantSeq;
-const bonkSeqs = new Map();   // BONK-id -> woord waarop getikt werd
-/* aftelbalk op de krant-telefoon, vloeiend tussen de updates door */
-var kTimer = null, kMax = 0;
-(function kTick(){
-  if (role === "krant" && kTimer && !$("kBar").hidden) {
-    const rem = kTimer.live ? Math.max(0, kTimer.ms - (performance.now() - kTimer.at)) : kTimer.ms;
-    $("kFill").style.width = Math.min(100, rem / kTimer.dur * 100) + "%";
-    $("kSecs").textContent = Math.ceil(rem / 1000);
-    $("kBar").classList.toggle("low", kTimer.live && rem <= 10000);
-  }
-  requestAnimationFrame(kTick);
-})();
+function applyState(d){
+  const num = (x, f) => Number.isFinite(Number(x)) ? Number(x) : f;
+  S.team = d.team === "B" ? "B" : "A";
+  S.score = { A: num(d.score && d.score.A, 0), B: num(d.score && d.score.B, 0) };
+  S.names = { A: String((d.names && d.names.A) || "").slice(0, 16), B: String((d.names && d.names.B) || "").slice(0, 16) };
+  S.dur = [30,60,90,120].includes(d.dur) ? d.dur : 90;
+  S.target = [0,15,30,50].includes(d.target) ? d.target : 30;
+  const seq = num(d.seq, 0), cardChanged = seq !== mirror.seq, wasRunning = running;
+  mirror = { card: { easy: String((d.card && d.card.easy) || "—"), hard: String((d.card && d.card.hard) || "—") }, idx: num(d.idx, 0), total: num(d.total, 0), seq, v: d.v };
+  running = !!d.running; paused = !!d.paused; counting = !!d.counting; bonkLock = !!d.lock;
+  remainingMs = num(d.ms, S.dur * 1000); endAt = performance.now() + remainingMs;
+  if (running && !timerId) timerId = setInterval(tick, 200);
+  if (!running && timerId) { clearInterval(timerId); timerId = null; }
+  if (running) wakeOn(); else wakeOff();
+  setLockUi(bonkLock);
+  render();
+  if (cardChanged && running) renderWords(wasRunning ? (["ok","skip","bonk"].includes(d.anim) ? d.anim : "skip") : "deal");
+  $("pauseOv").hidden = !(running && paused);
+  if (!running) $("hurry").classList.remove("on");
+  if (d.gate && !running && !counting) showGate(String(d.gate.title || ""), String(d.gate.result || ""));
+  else if (running || counting) $("gate").hidden = true;
+  if (d.win === "A" || d.win === "B") { if ($("winOv").hidden) { fillWin(d.win); $("winOv").hidden = false; } else fillWin(d.win); }
+  else $("winOv").hidden = true;
+  $("verNote").hidden = d.v === VERSION;
+  updateDuo(); updateRoleView();
+}
 function sendBonk(id){
-  if (!bonkSeqs.has(id)) bonkSeqs.set(id, krantSeq);
+  if (!bonkSeqs.has(id)) bonkSeqs.set(id, mirror.seq);
   const seq = bonkSeqs.get(id);
-  if (krantConn && krantConn.open) { try { krantConn.send({ t:"bonk", id, seq, cid:CID }); } catch(e){} }
+  if (gConn && gConn.open) { try { gConn.send({ t:"bonk", id, seq, cid:CID }); } catch(e){} }
   // opnieuw versturen tot de spel-telefoon het bevestigt; na 8 s is hij te oud
   pendingBonks.set(id, setTimeout(() => {
     if (!pendingBonks.has(id)) return;
     if (Date.now() - id < 8000) sendBonk(id); else { pendingBonks.delete(id); bonkSeqs.delete(id); }
   }, 1200));
 }
-function enterKrant(code){
-  if (!hasPeer()) { $("joinOv").hidden = false; joinMsg(NOLIB); return; }
-  role = "krant";
-  $("joinOv").hidden = true; closeMenu(); $("gate").hidden = true; $("rules").hidden = true;
-  $("krantOv").hidden = false; $("krantChip").hidden = true;
-  connectKrant(code);
+function tapScore(d){
+  if (role !== "guest") return award(d);
+  if (!running || paused || bonkLock || pendingTap === mirror.seq) return;
+  pendingTap = mirror.seq; setTimeout(() => { pendingTap = null; }, 1500);
+  sendCmd({ c:"award", d, seq:mirror.seq });
 }
+function leaveGame(){ location.href = location.pathname; }
 
 /* hartslag: dode verbindingen opruimen en automatisch opnieuw verbinden */
 setInterval(() => {
@@ -1141,18 +1335,20 @@ setInterval(() => {
   if (role === "host") {
     hostPresence();
     for (const [c, i] of conns) if (now - i.last > 8000) dropConn(c);
-  } else if (role === "krant" && krantCode) {
-    if (krantConn && krantConn.open) { try { krantConn.send({ t:"ping", cid:CID }); } catch(e){} }
-    if (!krantConnecting && $("krantRetry").hidden && now - krantLast > 8000) connectKrant(krantCode);
+  } else if (role === "guest" && gCode) {
+    if (gConn && gConn.open) { try { gConn.send({ t:"ping", cid:CID }); } catch(e){} }
+    if (!gConnecting && !gFailed && now - gLast > 8000) connectGuest(gCode);
+    updateDuo(); updateRoleView();
+    if (!$("gate").hidden) $("startBtn").disabled = !canStartHere();
   }
 }, 2000);
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState !== "visible") return;
   if (peer && !peer.destroyed && peer.disconnected) { try { peer.reconnect(); } catch(e){} }
-  if (role === "krant" && krantCode && Date.now() - krantLast > 4000) connectKrant(krantCode);
+  if (role === "guest" && gCode && Date.now() - gLast > 4000) connectGuest(gCode);
 });
 
-$("gateKrantBtn").onclick = openJoin;
+$("gateJoinBtn").onclick = openJoin;
 $("krantBtn").onclick = openJoin;
 $("joinCancel").onclick = () => { $("joinOv").hidden = true; };
 $("joinCode").addEventListener("input", e => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4); });
@@ -1160,23 +1356,18 @@ $("joinCode").addEventListener("keydown", e => { if (e.key === "Enter") $("joinG
 $("joinGo").onclick = () => {
   const code = $("joinCode").value.toUpperCase().replace(/[^A-Z0-9]/g, "");
   if (code.length !== 4) return joinMsg("De code heeft 4 tekens.");
-  if (code === hostCode) return joinMsg("Dat is de code van deze telefoon. Typ de code van de telefoon met de kaarten.");
-  audioOn(); goFullscreen(); krantCode = code; enterKrant(code);
+  if (code === hostCode) return joinMsg("Dat is de code van deze telefoon. Typ de code van de andere telefoon.");
+  audioOn(); goFullscreen(); joinGame(code);
 };
-$("krantRetry").onclick = () => connectKrant(krantCode);
-$("krantExit").onclick = () => {
-  role = "host"; krantCode = "";
-  try { krantConn && krantConn.close(); } catch(e){}
-  krantConn = null; $("krantOv").hidden = true;
-  for (const t of pendingBonks.values()) clearTimeout(t);
-  pendingBonks.clear();
-  updateHostUi(); hostPresence();
-  showGate(S.log.length ? "Verder spelen" : "Klaar om te spelen?");
-};
+$("krantRetry").onclick = () => connectGuest(gCode);
+$("guestRetry").onclick = () => connectGuest(gCode);
+$("leaveBtn").onclick = leaveGame;
+$("menuLeaveBtn").onclick = leaveGame;
+document.addEventListener("click", e => { const b = e.target.closest(".mySeg button"); if (b) setMyTeam(b.dataset.my); });
 $("bonkBtn").onclick = () => {
   const now = Date.now(); if (now - lastBonk < 600) return; lastBonk = now;
-  audioOn(); sendBonk(now);
-  bonkFx($("krantInner"));
+  audioOn();
+  if (role === "guest") sendBonk(now); else award(-1);
 };
 
 /* ---------- app-gevoel: schermvullend en installeren ---------- */
@@ -1226,13 +1417,12 @@ fetch("words.json", { cache: "no-cache" })
 
 render();
 showGate(S.log.length ? "Verder spelen" : "Klaar om te spelen?");
-startHost();
-const qk = new URLSearchParams(location.search).get("krant");
+const qp = new URLSearchParams(location.search), qk = qp.get("join") || qp.get("krant");
 if (qk) {
   try { history.replaceState(null, "", location.pathname); } catch(e){}
-  krantCode = qk.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4);
-  enterKrant(krantCode);
+  joinGame(qk.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4));
 } else {
+  startHost();
   try { if (!localStorage.getItem("bonk-rules-seen")) $("rules").hidden = false; } catch(e){}
 }
 })();

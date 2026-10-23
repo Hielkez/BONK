@@ -4,11 +4,13 @@ Woordspel voor twee teams. Omschrijf het woord met **alleen woorden van één le
 
 Speel het op: https://hielkez.github.io/BONK/
 
-## Krant op een tweede telefoon
+## Elk team een eigen telefoon
 
-1. Open de site op de telefoon met de kaarten. Onder de Start-knop staat de krant-code.
-2. De tegenpartij opent de site op een eigen telefoon, tikt op **Ik heb de krant** en typt de code. Of scant de QR-code in het menu.
-3. Tikt de tegenpartij op BONK, dan gaat er op de spel-telefoon −1 af.
+1. Open de site op de telefoon van team A. Op het startscherm staat een spelcode en een QR-code.
+2. Team B opent de site op hun telefoon, tikt op **Meedoen** en typt de code (of scant de QR-code).
+3. Wie aan de beurt is ziet de kaarten. De andere telefoon toont het woord, de tijd en een grote BONK-knop voor de tegenpartij. Na elke beurt wisselen de schermen vanzelf.
+
+De telefoon die het spel maakt houdt de stand bij; instellingen en kaarten regel je daar. Zonder tweede telefoon speel je gewoon met één telefoon die je doorgeeft.
 
 De telefoons verbinden direct met elkaar via WebRTC. [PeerJS](https://peerjs.com) koppelt ze aan elkaar met de gratis openbare koppelserver. Er is geen eigen server nodig.
 
