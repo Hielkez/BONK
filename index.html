@@ -223,16 +223,24 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
 #gate.home .logo span{color:var(--a)}
 .iconBtn{flex:none;width:44px;height:44px;border-radius:50%;background:var(--raise);display:grid;place-items:center}
 .scoreDuo{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}
-.sd{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:10px 14px;border-radius:14px;background:var(--raise);border:2px solid transparent}
+.sd{display:flex;flex-direction:column;align-items:stretch;gap:4px;padding:10px 14px;border-radius:14px;background:var(--raise);border:2px solid transparent}
 .sd span{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .sd b{font-family:var(--display);font-weight:800;font-size:28px;line-height:1;font-variant-numeric:tabular-nums}
-#gate[data-team="A"] .sd.a{border-color:var(--a)} #gate[data-team="A"] .sd.a span{color:var(--a)}
-#gate[data-team="B"] .sd.b{border-color:var(--b)} #gate[data-team="B"] .sd.b span{color:var(--b)}
+#gate[data-team="A"] .sd.a{border-color:var(--a)} 
+#gate[data-team="B"] .sd.b{border-color:var(--b)} 
 .sdMid{font-size:12px;color:var(--muted);text-align:center;font-variant-numeric:tabular-nums;min-width:28px}
 .setup{display:flex;flex-direction:column;gap:12px;padding:14px;border-radius:var(--r);background:var(--raise)}
 .setRow{display:flex;flex-direction:column;gap:6px}
 .setRow > span{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 #gate .ghostRow{margin-top:-6px}
+.team{min-width:0}
+.tname{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sd{min-width:0}
+.tnInput{min-width:0;width:100%;border:0;border-bottom:2px dashed var(--line);background:none;padding:2px 0;font:700 15px var(--body);color:var(--muted);text-overflow:ellipsis}
+.tnInput:focus{outline:none;border-bottom-color:var(--fg);color:var(--fg)}
+#gate:not(.home) .tnInput{border-bottom-color:transparent}
+#gate[data-team="A"] .sd.a .tnInput{color:var(--a)} #gate[data-team="B"] .sd.b .tnInput{color:var(--b)}
+.namesHint{margin:-8px 0 0;font-size:12px;color:var(--muted);text-align:center}
 </style>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -241,12 +249,12 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
 
 <div class="app">
   <header class="scorebar">
-    <div class="team a" id="teamA"><span class="tname">Team A</span><span class="tscore" id="scoreA">0</span></div>
+    <div class="team a" id="teamA"><span class="tname" id="tnA">Team A</span><span class="tscore" id="scoreA">0</span></div>
     <div class="timer" id="timer" role="timer" aria-live="off">
       <svg viewBox="0 0 64 64" aria-hidden="true"><circle class="track" cx="32" cy="32" r="28"></circle><circle class="ring" id="ring" cx="32" cy="32" r="28"></circle></svg>
       <span class="num" id="timeNum">90</span>
     </div>
-    <div class="team b" id="teamB"><span class="tname">Team B</span><span class="tscore" id="scoreB">0</span></div>
+    <div class="team b" id="teamB"><span class="tname" id="tnB">Team B</span><span class="tscore" id="scoreB">0</span></div>
   </header>
 
   <div class="meta">
@@ -290,10 +298,11 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
     <p class="gResult" id="gResult" hidden></p>
     <h1 class="gTeam turnOnly" id="gTeam">Team A</h1>
     <div class="scoreDuo">
-      <div class="sd a"><span>Team A</span><b id="gsA">0</b></div>
+      <label class="sd a"><input class="tnInput" id="nameA" maxlength="16" placeholder="Team A" autocomplete="off" spellcheck="false" aria-label="Naam team A"><b id="gsA">0</b></label>
       <div class="sdMid" id="gsTarget"></div>
-      <div class="sd b"><span>Team B</span><b id="gsB">0</b></div>
+      <label class="sd b"><input class="tnInput" id="nameB" maxlength="16" placeholder="Team B" autocomplete="off" spellcheck="false" aria-label="Naam team B"><b id="gsB">0</b></label>
     </div>
+    <p class="namesHint homeOnly">Tik op een teamnaam om hem te veranderen</p>
     <div class="setup homeOnly">
       <div class="setRow"><span>Spelen tot</span>
         <div class="seg seg4 tSeg"><button data-t="15">15</button><button data-t="30">30</button><button data-t="50">50</button><button data-t="0">Geen</button></div>
@@ -485,7 +494,7 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
 
 <script>
 (function(){
-const VERSION = "v7 · 23 okt 20:05";
+const VERSION = "v8 · 23 okt 20:10";
 document.querySelectorAll("[data-ver]").forEach(el => el.textContent = "BONK " + VERSION);
 
 const DEFAULT_CARDS = [
@@ -503,7 +512,7 @@ const DEFAULT_CARDS = [
 
 const KEY = "woordspel-v1";
 let base = (Array.isArray(window.CARDS) && window.CARDS.length) ? window.CARDS : DEFAULT_CARDS;
-const S = { cards:[], idx:0, team:"A", score:{A:0,B:0}, dur:90, turnPts:0, log:[], custom:null, target:30, deckVer:0 };
+const S = { cards:[], idx:0, team:"A", score:{A:0,B:0}, dur:90, turnPts:0, log:[], custom:null, target:30, deckVer:0, names:{A:"",B:""} };
 
 try { const d = JSON.parse(localStorage.getItem(KEY) || "null"); if (d && typeof d === "object") Object.assign(S, d); } catch(e){}
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} };
@@ -513,6 +522,9 @@ if (!Array.isArray(S.cards) || !S.cards.length) { S.cards = shuffled(source()); 
 if (S.idx >= S.cards.length) S.idx = 0;
 if (![60,90,120].includes(S.dur)) S.dur = 90;
 if (![0,15,30,50].includes(S.target)) S.target = 30;
+if (!S.names || typeof S.names !== "object") S.names = {A:"", B:""};
+const tn = t => (S.names[t] || "").trim() || `Team ${t}`;
+const esc = x => String(x).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
 let running=false, paused=false, remainingMs=S.dur*1000, endAt=0, timerId=null, lastSec=null;
 const $ = id => document.getElementById(id);
@@ -541,7 +553,8 @@ function render(){
   $("scoreA").textContent = S.score.A; $("scoreB").textContent = S.score.B;
   $("teamA").classList.toggle("active", S.team === "A");
   $("teamB").classList.toggle("active", S.team === "B");
-  $("turnLabel").textContent = `Team ${S.team}`;
+  $("turnLabel").textContent = tn(S.team);
+  $("tnA").textContent = tn("A"); $("tnB").textContent = tn("B");
   renderWords(); renderTimer(); hostPresence();
 }
 
@@ -572,10 +585,11 @@ function showGate(title, result){
   $("gate").dataset.team = S.team;
   $("gTitle").textContent = title;
   $("gate").classList.toggle("home", !result);
-  $("gTeam").textContent = `Team ${S.team}`;
+  $("gTeam").textContent = tn(S.team);
+  for (const t of ["A","B"]) { const inp = $("name"+t); if (document.activeElement !== inp) inp.value = S.names[t] || ""; }
   $("gsA").textContent = S.score.A; $("gsB").textContent = S.score.B;
   $("gsTarget").textContent = S.target ? `tot ${S.target}` : "";
-  $("startBtn").textContent = result ? `Start beurt · ${S.dur} s` : (S.log.length ? `Verder · Team ${S.team}` : `Start · Team ${S.team} begint`);
+  $("startBtn").textContent = result ? `Start beurt · ${S.dur} s` : (S.log.length ? `Verder · ${tn(S.team)}` : `Start · ${tn(S.team)} begint`);
   renderDur();
   const r = $("gResult");
   if (result) { r.innerHTML = result; r.hidden = false; } else r.hidden = true;
@@ -611,7 +625,7 @@ function endTurn(manual){
   remainingMs = S.dur*1000;
   save(); render(); wakeOff();
   showGate(manual ? "Beurt gestopt · volgende" : "Tijd is op! · volgende",
-    `Team ${prev} haalde <b>${fmt(pts)}</b> ${Math.abs(pts)===1?"punt":"punten"} deze beurt.`);
+    `${esc(tn(prev))} haalde <b>${fmt(pts)}</b> ${Math.abs(pts)===1?"punt":"punten"} deze beurt.`);
 }
 function nextCard(){ cardSeq++; S.idx = (S.idx + 1) % S.cards.length; renderWords(); save(); hostPresence(); }
 /* Na een BONK even niets meer: geen tweede BONK, geen punten, pas daarna een nieuw woord */
@@ -647,7 +661,7 @@ function winGame(team){
   const o = other(team);
   setTimeout(() => {
     $("winOv").dataset.team = team;
-    $("winTeam").textContent = `Team ${team}`;
+    $("winTeam").textContent = tn(team);
     $("winText").innerHTML = `wint met <b>${S.score[team]}</b> tegen <b>${S.score[o]}</b>`;
     $("winOv").hidden = false;
     for (let i = 0; i < 3; i++) setTimeout(() => confetti($("winTeam"), i % 2 ? "var(--a)" : "var(--b)"), i * 250);
@@ -674,7 +688,7 @@ function renderLog(){
   if (!S.log.length) { ul.innerHTML = '<li class="start">Nog geen punten. Start een beurt om te beginnen.</li>'; return; }
   for (const e of S.log) {
     const li = document.createElement("li");
-    if (e.start) { li.className = "start"; li.textContent = `Start beurt Team ${e.team}`; }
+    if (e.start) { li.className = "start"; li.textContent = `Start beurt ${tn(e.team)}`; }
     else {
       const dot = document.createElement("span"); dot.className = "dot " + e.team;
       const w = document.createElement("span"); w.className = "lw"; w.textContent = e.word;
@@ -730,6 +744,16 @@ document.addEventListener("click", e=>{
   if (t) { S.target = +t.dataset.t; save(); renderDur(); $("gsTarget").textContent = S.target ? `tot ${S.target}` : ""; }
   if (d && !running) { S.dur = +d.dataset.dur; remainingMs = S.dur*1000; save(); renderDur(); renderTimer(); }
 });
+for (const t of ["A","B"]) {
+  $("name"+t).addEventListener("input", e => {
+    S.names[t] = e.target.value.slice(0, 16); save();
+    $("tnA").textContent = tn("A"); $("tnB").textContent = tn("B"); $("turnLabel").textContent = tn(S.team);
+    $("gTeam").textContent = tn(S.team);
+    if ($("gate").classList.contains("home")) $("startBtn").textContent = S.log.length ? `Verder · ${tn(S.team)}` : `Start · ${tn(S.team)} begint`;
+    hostPresence();
+  });
+  $("name"+t).addEventListener("keydown", e => { if (e.key === "Enter") e.target.blur(); });
+}
 $("gateCardsBtn").onclick = ()=>{ openMenu(); $("editBtn").click(); setTimeout(()=>$("editor").scrollIntoView({block:"start"}), 50); };
 $("newGameBtn").onclick = ()=>{ $("winOv").hidden = true; S.cards = shuffled(source()); S.idx = 0; resetScores(); };
 $("winMenuBtn").onclick = ()=>{ openMenu(); };
@@ -819,7 +843,7 @@ try { CID = sessionStorage.getItem("bonk-cid"); } catch(e){}
 if (!CID) { CID = Math.random().toString(36).slice(2, 10); try { sessionStorage.setItem("bonk-cid", CID); } catch(e){} }
 
 /* spel-telefoon */
-function hostState(){ return { t:"state", team:S.team, running, paused, secs:Math.ceil(remainingMs/1000), seq:cardSeq, lock:bonkLock }; }
+function hostState(){ return { t:"state", team:S.team, running, paused, secs:Math.ceil(remainingMs/1000), seq:cardSeq, lock:bonkLock, name:tn(S.team) }; }
 function hostPresence(){
   if (role !== "host") return;
   const m = hostState();
@@ -939,9 +963,9 @@ function connectKrant(code){
       if (d.t !== "state") return;
       if (typeof d.seq === "number") krantSeq = d.seq;
       if (d.running && d.lock) { setKrantStatus("BONK! Volgend woord komt eraan…", false); return; }
-      const team = d.team === "B" ? "B" : "A";
-      if (d.running && !d.paused) setKrantStatus(`Team ${team} omschrijft · ${Number(d.secs) || 0} s`, true);
-      else setKrantStatus(d.running ? "Pauze" : `Wachten tot Team ${team} start`, false);
+      const team = (typeof d.name === "string" && d.name.trim()) ? d.name.trim().slice(0, 16) : `Team ${d.team === "B" ? "B" : "A"}`;
+      if (d.running && !d.paused) setKrantStatus(`${team} omschrijft · ${Number(d.secs) || 0} s`, true);
+      else setKrantStatus(d.running ? "Pauze" : `Wachten tot ${team} start`, false);
     });
     c.on("close", () => {
       if (krantConn !== c || role !== "krant") return;
