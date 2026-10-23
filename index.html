@@ -750,7 +750,7 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
     <section class="rp rp4">
       <span class="rpNum" aria-hidden="true">5</span>
       <p class="rpLead">Tijd op? Dan is het andere team aan de beurt.</p>
-      <p class="rpNote">Wie als eerste het doel haalt, wint. Beide teams krijgen evenveel beurten, dus het andere team mag altijd nog terugslaan.</p>
+      <p class="rpNote">Doel gehaald? Speel je beurt gewoon uit, elk punt telt. Daarna krijgt het andere team nog één volle beurt om je in te halen. Wie na die ronde de meeste punten heeft, wint.</p>
     </section>
 
     <p class="rpFoot">Opgerolde krant erbij om echt te bonken? Mag. Wel zacht.</p>
@@ -829,7 +829,7 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 
 <script>
 (function(){
-const VERSION = "v38 · 24 okt 01:05";
+const VERSION = "v39 · 24 okt 01:15";
 document.querySelectorAll("[data-ver]").forEach(el => el.textContent = "BONK " + VERSION);
 
 const DEFAULT_CARDS = [
@@ -1022,7 +1022,8 @@ function endTurn(how){
   advanceCard(); cardSeq++;
   remainingMs = S.dur*1000;
   save(); render(); wakeOff(); $("hurry").classList.remove("on");
-  const title = how === "goal" ? "Doel gehaald!" : how ? "Beurt gestopt · volgende" : "Tijd is op! · volgende";
+  const goalHit = S.target && !roundDone && S.score[prev] >= S.target;
+  const title = goalHit ? "Doel gehaald!" : how ? "Beurt gestopt · volgende" : "Tijd is op! · volgende";
   const go = () => winner ? winGame(winner) : showGate(title,
     `${esc(tn(prev))} haalde <b>${fmt(pts)}</b> ${Math.abs(pts)===1?"punt":"punten"} deze beurt.` + note);
   if (how) return go();
@@ -1047,13 +1048,8 @@ function award(d){
     const t = S.team, o = other(t), second = S.turns[t] === S.turns[o];
     // tweede team van de ronde komt erop of erover en staat voor: meteen gewonnen
     if (second && S.score[t] >= S.target && S.score[t] > S.score[o]) { fx("ok", { d, team:t }); winGame(t); return; }
-    // eerste team haalt het doel: beurt stopt, het andere team krijgt nog een laatste beurt
-    if (!second && S.score[t] >= S.target) {
-      busy = true; render(); fx("ok", { d, team:t });
-      const tok = lockTok;
-      setTimeout(() => { if (tok === lockTok && running) endTurn("goal"); }, 900);
-      return;
-    }
+    // eerste team haalt het doel: gewoon doorspelen tot de tijd op is (elk punt telt),
+    // daarna krijgt het andere team een even lange laatste beurt om in te halen
   }
   if (d < 0) {
     fx("bonk");
