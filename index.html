@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#12303a">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -30,6 +30,11 @@
   --r:18px;
 }
 html,body{height:100%;margin:0}
+/* de pagina zelf beweegt nooit: alleen menu's en schermen met veel inhoud scrollen binnenin */
+html,body{position:fixed;inset:0;width:100%;overflow:hidden;overscroll-behavior:none}
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea{-webkit-user-select:text;user-select:text}
+*{touch-action:manipulation}
 *,*::before,*::after{box-sizing:border-box}
 [hidden]{display:none!important}
 img{max-width:100%}
@@ -67,15 +72,20 @@ button:focus-visible{outline:3px solid var(--b);outline-offset:2px}
 
 /* Word cards */
 .stage{flex:1;min-height:0;display:flex;flex-direction:column;gap:12px}
-.word{flex:1;min-height:0;display:flex;flex-direction:column;padding:14px 16px 16px;border-radius:var(--r);background:var(--paper);color:var(--ink);text-align:center;box-shadow:0 6px 0 var(--bg-deep);transition:transform .08s}
+.word{flex:1;min-height:0;display:flex;flex-direction:column;padding:12px 14px 16px;border-radius:var(--r);background:var(--paper);color:var(--ink);text-align:center;box-shadow:0 6px 0 var(--bg-deep);transition:transform .08s}
 .word:active{transform:translateY(3px) scale(.99);box-shadow:0 3px 0 var(--bg-deep)}
 .word .top{display:flex;justify-content:space-between;align-items:center}
 .lvl{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)}
 .pts{font-family:var(--display);font-weight:800;font-size:15px;padding:4px 10px;border-radius:999px;background:var(--good);color:#0d2a1c}
 .hard .pts{background:var(--ink);color:var(--b)}
-.w{flex:1;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:clamp(30px, 10vw, 50px);line-height:1.05;overflow-wrap:anywhere;hyphens:auto;min-height:0}
-.w.long{font-size:clamp(24px, 7.6vw, 38px)}
-.tapHint{font-size:12px;color:var(--ink-soft)}
+.w{flex:1;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:clamp(38px, 12.5vw, 62px);line-height:1.05;overflow-wrap:anywhere;hyphens:auto;min-height:0}
+.w.long{font-size:clamp(28px, 9vw, 46px)}
+.tapHint{font-size:15px;font-weight:600;color:var(--ink-soft)}
+.wTag{align-self:flex-start;display:inline-flex;align-items:center;gap:10px;padding:5px 16px 5px 5px;border-radius:999px;background:rgba(27,42,46,.08)}
+.wTag b{display:grid;place-items:center;min-width:52px;height:40px;padding:0 8px;border-radius:999px;font-family:var(--display);font-weight:800;font-size:24px;background:var(--good);color:#0d2a1c}
+.wTag span{font-size:17px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink)}
+.word.hard{background:color-mix(in srgb, var(--b) 24%, var(--paper))}
+.hard .wTag b{background:var(--ink);color:var(--b)}
 /* kaart-overgangen */
 .in-deal .word{animation:inDeal .4s cubic-bezier(.2,.9,.3,1.15) both}
 .in-ok .word{animation:inFlip .42s cubic-bezier(.2,.8,.3,1.1) both}
@@ -95,8 +105,8 @@ button:focus-visible{outline:3px solid var(--b);outline-offset:2px}
 @keyframes hitFlash{0%{opacity:0}30%{opacity:.55}100%{opacity:.2}}
 
 /* Actions */
-.actions{display:grid;grid-template-columns:1fr 1.3fr 1fr;gap:10px}
-.act{min-height:58px;border-radius:var(--r);background:var(--raise);font-weight:700;font-size:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.act{min-height:62px;border-radius:var(--r);background:var(--raise);font-family:var(--display);font-weight:800;font-size:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1}
 .act small{font-weight:600;font-size:12px;color:var(--muted)}
 .act.bad{background:color-mix(in srgb, var(--bad) 22%, var(--raise));color:#ffd9d7}
 .act.bad small{color:#f3aeab}
@@ -251,7 +261,7 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
 .team{min-width:0}
 .tname{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sd{min-width:0}
-.tnInput{min-width:0;width:100%;border:0;border-bottom:2px dashed var(--line);background:none;padding:2px 0;font:700 15px var(--body);color:var(--muted);text-overflow:ellipsis}
+.tnInput{min-width:0;width:100%;border:0;border-bottom:2px dashed var(--line);background:none;padding:2px 0;font:700 16px var(--body);color:var(--muted);text-overflow:ellipsis}
 .tnInput[readonly]{border-bottom-color:transparent;cursor:default}
 .tnInput:focus{outline:none;border-bottom-color:var(--fg);color:var(--fg)}
 #gate:not(.home) .tnInput{border-bottom-color:transparent}
@@ -323,7 +333,7 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 .kWords{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:340px}
 .kWords div{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:14px;background:var(--paper);color:var(--ink);text-align:center;min-width:0}
 .kWords span{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)}
-.kWords b{font-family:var(--display);font-weight:800;font-size:20px;overflow-wrap:anywhere}
+.kWords b{font-family:var(--display);font-weight:800;font-size:26px;line-height:1.1;overflow-wrap:anywhere}
 #pauseOv{z-index:21}
 .bigBtn:disabled{background:var(--raise)!important;color:var(--muted);cursor:default}
 /* keuzescherm */
@@ -365,6 +375,65 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 .claps .no{background:color-mix(in srgb,var(--bad) 22%,transparent);color:#ffb4b1}
 .codeLabel{font-size:14px;font-weight:700;color:var(--fg);margin-bottom:-12px}
 .codeInput::placeholder{color:var(--muted);opacity:.45;letter-spacing:.15em}
+/* stappenplan */
+#wizard{padding-top:max(16px, env(safe-area-inset-top, 0px));padding-bottom:max(16px, env(safe-area-inset-bottom, 0px))}
+.wzInner{max-width:440px;width:100%;height:100%;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.wzTop{display:flex;align-items:center;gap:14px}
+.wzDots{flex:1;display:flex;gap:6px}
+.wzDots i{flex:1;height:6px;border-radius:3px;background:var(--raise);transition:background .35s}
+.wzDots i.on{background:var(--b)}
+.wzCount{font-size:13px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;min-width:36px;text-align:right}
+.wzViewport{position:relative;flex:1;min-height:0;overflow:hidden}
+.wzPage{position:absolute;inset:0;overflow-y:auto;display:flex;flex-direction:column;justify-content:center;gap:16px;padding:4px 2px;
+  transform:translateX(105%);opacity:0;pointer-events:none;transition:transform .5s cubic-bezier(.2,.8,.25,1),opacity .35s}
+.wzPage.left{transform:translateX(-105%)}
+.wzPage.active{transform:none;opacity:1;pointer-events:auto}
+.wzPage.active > *{animation:rise .5s cubic-bezier(.2,.8,.3,1) both}
+.wzPage.active > :nth-child(2){animation-delay:.06s}
+.wzPage.active > :nth-child(3){animation-delay:.12s}
+.wzPage.active > :nth-child(4){animation-delay:.18s}
+.wzPage.active > :nth-child(n+5){animation-delay:.24s}
+.wzKicker{margin:0;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--b)}
+.wzTitle{margin:0;font-family:var(--display);font-weight:800;font-size:clamp(30px,9vw,40px);line-height:1.05;text-wrap:balance}
+.wzHint{margin:0;font-size:15px;line-height:1.45;color:var(--muted)}
+.wzHint b{color:var(--fg)}
+.wzName{display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:var(--r);background:var(--raise);border:2px solid transparent;transition:border-color .2s}
+.wzName:focus-within{border-color:var(--fg)}
+.wzName i{flex:none;width:16px;height:16px;border-radius:50%}
+.wzName.a i{background:var(--a)} .wzName.b i{background:var(--b)}
+.wzName input{flex:1;min-width:0;border:0;background:none;color:var(--fg);font:800 26px var(--display);outline:none}
+.wzName input::placeholder{color:var(--muted);opacity:.6}
+.wzVs{margin:-6px 0;text-align:center;font-weight:700;color:var(--muted);font-size:14px}
+.wzChoices{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.wzChoices.three{grid-template-columns:1fr}
+.wzChoice{display:flex;flex-direction:column;gap:4px;padding:18px 16px;border-radius:var(--r);background:var(--raise);border:2px solid transparent;text-align:left;transition:border-color .2s, background-color .2s, transform .12s}
+.wzChoices.three .wzChoice{flex-direction:row;align-items:baseline;gap:12px}
+.wzChoice b{font-family:var(--display);font-weight:800;font-size:38px;line-height:1}
+.wzChoice small{font-size:14px;color:var(--muted)}
+.wzChoice:active{transform:scale(.97)}
+.wzChoice[aria-pressed="true"]{border-color:var(--b);background:color-mix(in srgb,var(--b) 16%,var(--raise));animation:pick .35s cubic-bezier(.2,1.6,.4,1)}
+.wzChoice[aria-pressed="true"] b{color:var(--b)}
+@keyframes pick{40%{transform:scale(1.05)}}
+.wzDuo{flex-direction:column;align-items:stretch;text-align:center}
+.wzDuo .duoCode{order:-1;gap:10px}
+.wzDuo .qrMini{width:162px;height:162px;padding:8px;border-radius:14px}
+.wzDuo .qrMini img,.wzDuo .qrMini canvas{width:146px!important;height:146px!important}
+.wzDuo .code.small{font-size:34px;letter-spacing:.22em}
+.wzDuo .duoText{align-items:center;font-size:15px}
+.wzDuo.linked .duoCode{display:none}
+.wzDuo .waitDot{display:inline-block;width:8px;height:8px;margin-right:8px;border-radius:50%;background:var(--b);vertical-align:middle;animation:pulse 1.1s ease-in-out infinite}
+.wzDuo.linked .duoText{font-size:17px}
+.wzDuo.linked .ok{display:block;font-family:var(--display);font-size:24px;animation:popIn .5s cubic-bezier(.2,1.6,.4,1)}
+.wzSum{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.wzSum li{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:14px;background:var(--raise);font-size:17px;font-weight:600}
+.wzSum .ic{width:36px;height:36px;border-radius:10px;background:var(--bg-deep)}
+.wzSum .ic svg{width:22px;height:22px}
+.wzSum .vs{color:var(--muted);font-weight:700;font-size:14px;margin:0 4px}
+.wzSum .na{color:var(--a)} .wzSum .nb{color:var(--b)}
+#wzNext{background:var(--b);color:var(--ink)}
+.wzDuo .duoMine{flex-basis:auto;width:100%;text-align:left}
+.kWords b{overflow-wrap:normal;word-break:normal;hyphens:auto}
+.kWords b.long{font-size:19px}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
@@ -393,12 +462,12 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 
   <main class="stage" id="stage">
     <button class="word easy" id="easyBtn" aria-label="Makkelijk woord geraden, plus 1">
-      <span class="top"><span class="lvl">Makkelijk</span><span class="pts">+1</span></span>
+      <span class="wTag"><b>+1</b><span>Makkelijk</span></span>
       <span class="w" id="easyText">—</span>
       <span class="tapHint">Tik als het geraden is</span>
     </button>
     <button class="word hard" id="hardBtn" aria-label="Moeilijk woord geraden, plus 3">
-      <span class="top"><span class="lvl">Moeilijk</span><span class="pts">+3</span></span>
+      <span class="wTag"><b>+3</b><span>Moeilijk</span></span>
       <span class="w" id="hardText">—</span>
       <span class="tapHint">Tik als het geraden is</span>
     </button>
@@ -406,7 +475,6 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 
   <footer class="actions">
     <button class="act bad" id="minusBtn">BONK!<small>−1 punt</small></button>
-    <button class="act" id="skipBtn">Overslaan<small>geen punten</small></button>
     <button class="act" id="pauseBtn">Pauze<small>timer stil</small></button>
   </footer>
 </div>
@@ -421,7 +489,6 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
       </button>
     </div>
     <p class="gTitle turnOnly" id="gTitle"></p>
-    <h2 class="setupTitle homeOnly hostOnly">Nieuw spel</h2>
     <p class="gResult" id="gResult" hidden></p>
     <h1 class="gTeam turnOnly" id="gTeam">Team A</h1>
     <div class="scoreDuo">
@@ -429,27 +496,8 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
       <div class="sdMid" id="gsTarget"></div>
       <label class="sd b"><input class="tnInput" id="nameB" maxlength="16" placeholder="Team B" autocomplete="off" spellcheck="false" aria-label="Naam team B"><b id="gsB">0</b></label>
     </div>
-    <p class="namesHint homeOnly" id="namesHint">Tik op een teamnaam om hem te veranderen</p>
-    <div class="setup homeOnly hostOnly">
-      <div class="setRow"><span>Spelen tot</span>
-        <div class="seg seg4 tSeg"><button data-t="15">15</button><button data-t="30">30</button><button data-t="50">50</button><button data-t="0">Geen</button></div>
-      </div>
-      <div class="setRow"><span>Tijd per beurt</span>
-        <div class="seg seg4 dSeg"><button data-dur="30">30 s</button><button data-dur="60">60 s</button><button data-dur="90">90 s</button><button data-dur="120">120 s</button></div>
-      </div>
-    </div>
     <button class="bigBtn" id="startBtn">Start</button>
-    <div class="duo homeOnly hostOnly" id="duoHost">
-      <!-- spelcode voor het andere team -->
-      <div class="duoText">
-        <b>Laat het andere team meedoen</b>
-        <span id="duoStatus">Het andere team opent BONK en tikt op <i>Meedoen</i> met deze code.</span>
-      </div>
-      <div class="duoCode"><div class="qrMini" id="qrMini"></div><span class="code small" id="duoCode">····</span></div>
-      <div class="setRow duoMine" id="duoMine" hidden><span>Deze telefoon is van</span>
-        <div class="seg mySeg"><button data-my="A" id="myA">Team A</button><button data-my="B" id="myB">Team B</button></div>
-      </div>
-    </div>
+    <p class="gHint homeOnly hostOnly" id="gateCodeLine" hidden></p>
     <div class="duo guestOnly" id="duoGuest">
       <div class="duoText"><b id="guestTitle">Verbonden</b><span id="guestStatus"></span></div>
       <button class="ghost" id="guestRetry" hidden>Opnieuw</button><button class="ghost" id="leaveBtn">Verlaten</button>
@@ -489,6 +537,67 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
   </div>
 </section>
 
+<!-- Spel maken: stap voor stap -->
+<section class="overlay" id="wizard" hidden>
+  <div class="wzInner">
+    <div class="wzTop">
+      <button class="iconBtn" id="wzBack" aria-label="Terug"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <div class="wzDots" id="wzDots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      <span class="wzCount" id="wzCount">1 / 5</span>
+    </div>
+    <div class="wzViewport">
+      <div class="wzPage" data-step="1">
+        <p class="wzKicker">Stap 1</p>
+        <h2 class="wzTitle">Hoe heten de teams?</h2>
+        <label class="wzName a"><i></i><input id="wzNameA" maxlength="16" placeholder="Team A" autocomplete="off" spellcheck="false" aria-label="Naam team A"></label>
+        <p class="wzVs">tegen</p>
+        <label class="wzName b"><i></i><input id="wzNameB" maxlength="16" placeholder="Team B" autocomplete="off" spellcheck="false" aria-label="Naam team B"></label>
+        <p class="wzHint">Geen zin in namen? Tik gewoon op Volgende.</p>
+      </div>
+      <div class="wzPage" data-step="2">
+        <p class="wzKicker">Stap 2</p>
+        <h2 class="wzTitle">Tot hoeveel punten spelen jullie?</h2>
+        <div class="wzChoices">
+          <button class="wzChoice" data-t="15"><b>15</b><small>Kort potje</small></button>
+          <button class="wzChoice" data-t="30"><b>30</b><small>Normaal</small></button>
+          <button class="wzChoice" data-t="50"><b>50</b><small>Lange avond</small></button>
+          <button class="wzChoice" data-t="0"><b>∞</b><small>Geen einde</small></button>
+        </div>
+      </div>
+      <div class="wzPage" data-step="3">
+        <p class="wzKicker">Stap 3</p>
+        <h2 class="wzTitle">Hoe lang duurt een beurt?</h2>
+        <div class="wzChoices three">
+          <button class="wzChoice" data-dur="30"><b>30</b><small>seconden · snel</small></button>
+          <button class="wzChoice" data-dur="45"><b>45</b><small>seconden</small></button>
+          <button class="wzChoice" data-dur="60"><b>60</b><small>seconden · rustig</small></button>
+        </div>
+      </div>
+      <div class="wzPage" data-step="4">
+        <p class="wzKicker">Stap 4 · mag ook overslaan</p>
+        <h2 class="wzTitle">Speelt het andere team op een eigen telefoon?</h2>
+        <p class="wzHint">Laat ze BONK openen, op <b>Meedoen</b> tikken en deze code invullen. Of de QR-code scannen.</p>
+    <div class="duo wzDuo" id="duoHost">
+        <!-- spelcode voor het andere team -->
+        <div class="duoText">
+                  <span id="duoStatus">Het andere team opent BONK en tikt op <i>Meedoen</i> met deze code.</span>
+        </div>
+        <div class="duoCode"><div class="qrMini" id="qrMini"></div><span class="code small" id="duoCode">····</span></div>
+        <div class="setRow duoMine" id="duoMine" hidden><span>Deze telefoon is van</span>
+          <div class="seg mySeg"><button data-my="A" id="myA">Team A</button><button data-my="B" id="myB">Team B</button></div>
+        </div>
+      </div>
+        </div>
+      <div class="wzPage" data-step="5">
+        <p class="wzKicker">Klaar!</p>
+        <h2 class="wzTitle">Zin in?</h2>
+        <ul class="wzSum" id="wzSum"></ul>
+      </div>
+    </div>
+    <button class="bigBtn" id="wzNext">Volgende</button>
+  </div>
+</section>
+
 <!-- Winnaar -->
 <section class="overlay" id="winOv" data-team="A" hidden>
   <div class="gateInner" style="text-align:center">
@@ -523,7 +632,7 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
       <li><span class="ic a" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="8" height="15" rx="2"/><rect x="13" y="4" width="8" height="15" rx="2"/><path d="M6 16h2M16 16h2"/></svg></span><span><b class="st">Twee teams</b><span class="sd2">Elk team een eigen telefoon, of één telefoon die je doorgeeft.</span></span></li>
       <li><span class="ic b" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5h16v10H10l-5 4v-4H4z"/><path d="M11 8.5l1.5-1V13"/></svg></span><span><b class="st">Omschrijf het woord</b><span class="sd2">Alleen met woorden van <b>één lettergreep</b>. <i>Fiets</i>: “twee wiel, trap, bel”.</span></span></li>
       <li><span class="ic good" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M7.5 12.5l3 3 6-7"/></svg></span><span><b class="st">Geraden? Tik op de kaart</b><span class="sd2"><span class="pt p1">+1</span> makkelijk &nbsp; <span class="pt p3">+3</span> moeilijk</span></span></li>
-      <li><span class="ic muted" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 6l7 6-7 6zM13 6l7 6-7 6z"/></svg></span><span><b class="st">Lukt het niet?</b><span class="sd2">Tik op <b>Overslaan</b>. Dat kost niets.</span></span></li>
+      <li><span class="ic muted" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 12h6M14 12h6M12 4v6M12 14v6"/></svg></span><span><b class="st">Kies slim</b><span class="sd2">Makkelijk of moeilijk, jij kiest. Overslaan kan niet: blijf omschrijven!</span></span></li>
       <li><span class="ic bad" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2l2 5 5-2-2 5 5 2-5 2 2 5-5-2-2 5-2-5-5 2 2-5-5-2 5-2-2-5 5 2z"/></svg></span><span><b class="st">Te lang woord gezegd?</b><span class="sd2">De tegenpartij roept <b>BONK!</b> en tikt op de knop: <span class="pt m1">−1</span></span></span></li>
       <li><span class="ic b" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M10 2h4M12 2v3"/></svg></span><span><b class="st">Tijd op?</b><span class="sd2">Het andere team is aan de beurt.</span></span></li>
       <li><span class="ic a" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 01-10 0z"/><path d="M7 6H4a3 3 0 003 4M17 6h3a3 3 0 01-3 4M12 14v4M8 21h8M9 18h6"/></svg></span><span><b class="st">Winnen</b><span class="sd2">Wie het eerst aan de punten komt, wint. Beide teams krijgen evenveel beurten.</span></span></li>
@@ -605,7 +714,7 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 
 <script>
 (function(){
-const VERSION = "v19 · 23 okt 23:00";
+const VERSION = "v21 · 23 okt 23:45";
 document.querySelectorAll("[data-ver]").forEach(el => el.textContent = "BONK " + VERSION);
 
 const DEFAULT_CARDS = [
@@ -623,7 +732,7 @@ const DEFAULT_CARDS = [
 
 const KEY = "woordspel-v1";
 let base = (Array.isArray(window.CARDS) && window.CARDS.length) ? window.CARDS : DEFAULT_CARDS;
-const S = { cards:[], idx:0, team:"A", score:{A:0,B:0}, dur:90, turnPts:0, log:[], custom:null, target:30, deckVer:0, names:{A:"",B:""}, turns:{A:0,B:0} };
+const S = { cards:[], idx:0, team:"A", score:{A:0,B:0}, dur:60, turnPts:0, log:[], custom:null, target:30, deckVer:0, names:{A:"",B:""}, turns:{A:0,B:0} };
 
 try { const d = JSON.parse(localStorage.getItem(KEY) || "null"); if (d && typeof d === "object") Object.assign(S, d); } catch(e){}
 const save = () => { if (role === "guest") return; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} };
@@ -637,7 +746,7 @@ function shuffled(arr){ const a = arr.map(c=>({easy:c.easy, hard:c.hard})); for(
 if (!Array.isArray(S.cards) || !S.cards.length) { S.cards = shuffled(source()); S.idx = 0; }
 if (S.idx >= S.cards.length) S.idx = 0;
 S.custom = null;
-if (![30,60,90,120].includes(S.dur)) S.dur = 90;
+if (![30,45,60].includes(S.dur)) S.dur = 60;
 if (!S.turns || typeof S.turns !== "object") S.turns = { A:0, B:0 };
 if (![0,15,30,50].includes(S.target)) S.target = 30;
 if (!S.names || typeof S.names !== "object") S.names = {A:"", B:""};
@@ -791,10 +900,6 @@ function endTurn(how){
   setTimeout(go, 1100);
 }
 function nextCard(anim){ lastAnim = anim || "skip"; cardSeq++; advanceCard(); renderWords(lastAnim); save(); hostPresence(); updateRoleView(); }
-function skipCard(){
-  if (role === "guest") { if ((running || Math.abs(serverNow() - countEndS) < 2500) && !paused && !bonkLock && pendingTap !== mirror.seq) { pendingTap = mirror.seq; setTimeout(() => { pendingTap = null; }, 1500); sendCmd({ c:"skip", seq:mirror.seq }); } return; }
-  if (running && !paused && !bonkLock && !busy) nextCard("skip");
-}
 /* Na een BONK even niets meer: geen tweede BONK, geen punten, pas daarna een nieuw woord */
 var cardSeq = 0, bonkLock = false, lockTok = 0, busy = false;
 const BONK_PAUSE = 1400;
@@ -895,10 +1000,16 @@ function resetScores(){
 
 /* ---------- events ---------- */
 $("startBtn").onclick = beginTurn;
-$("easyBtn").onclick = ()=>tapScore(1);
-$("hardBtn").onclick = ()=>tapScore(3);
-$("minusBtn").onclick = ()=>tapScore(-1);
-$("skipBtn").onclick = skipCard;
+// tik telt meteen bij aanraken (niet pas bij loslaten), zodat een kleine vingerbeweging hem niet laat mislukken
+function onTap(el, fn){
+  let last = 0;
+  const run = () => { const now = Date.now(); if (now - last < 350) return; last = now; fn(); };
+  el.addEventListener("pointerdown", e => { if (e.pointerType === "mouse" && e.button !== 0) return; e.preventDefault(); run(); });
+  el.addEventListener("click", run);   // toetsenbord en oudere browsers
+}
+onTap($("easyBtn"), () => tapScore(1));
+onTap($("hardBtn"), () => tapScore(3));
+onTap($("minusBtn"), () => tapScore(-1));
 $("pauseBtn").onclick = pause;
 $("resumeBtn").onclick = resume;
 $("stopBtn").onclick = ()=>{ if (role === "guest") sendCmd({ c:"stop" }); else endTurn(true); };
@@ -941,11 +1052,10 @@ $("resetAllBtn").onclick = e=>confirmTap(e.currentTarget, "Nieuw spel", ()=>{ ad
 window.addEventListener("keydown", e=>{
   if (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT" || role === "guest" || !$("krantOv").hidden || !$("joinOv").hidden) return;
   if (!$("rules").hidden) { if (e.key === "Escape" || e.key === "Enter") closeRules(); return; }
-  if (!$("lobby").hidden) return;
+  if (!$("lobby").hidden || !$("wizard").hidden) return;
   if (!$("gate").hidden) { if (e.key === "Enter") beginTurn(); return; }
   if (e.key === "p" || e.key === "P") { paused ? resume() : pause(); }
   if (paused || !$("menu").hidden) return;
-  if (e.code === "Space") { e.preventDefault(); skipCard(); }
   if (e.key === "1") award(-1);
   if (e.key === "2") award(1);
   if (e.key === "3") award(3);
@@ -1101,6 +1211,7 @@ function updateRoleView(){
   if (!watch) return;
   const c = curCard();
   $("kEasy").textContent = c.easy; $("kHard").textContent = c.hard;
+  $("kEasy").classList.toggle("long", c.easy.length > 7); $("kHard").classList.toggle("long", c.hard.length > 7);
   $("kBar").hidden = !running; $("kBar").classList.toggle("still", paused);
   let txt, on = false;
   if (role === "guest" && !guestOnline()) txt = "Verbinding kwijt. Opnieuw verbinden…";
@@ -1125,10 +1236,15 @@ function setKrantStatus(text, enabled){ $("kStatus").textContent = text; $("bonk
 function canEditName(t){ return role === "guest" ? t === myTeam : (!linked() || t === myTeam); }
 function updateNameLocks(){
   for (const t of ["A","B"]) { const inp = $("name"+t), ok = canEditName(t); inp.readOnly = !ok; inp.tabIndex = ok ? 0 : -1; }
-  $("namesHint").textContent = (role === "guest" || linked()) ? "Tik op je eigen teamnaam om hem te veranderen" : "Tik op een teamnaam om hem te veranderen";
 }
 function updateDuo(){
   updateNameLocks();
+  if (role === "host") {
+    const line = $("gateCodeLine");
+    line.hidden = !hostCode || linked();
+    if (hostCode) line.innerHTML = `Andere telefoon? Spelcode <b>${hostCode}</b>`;
+    if (!$("wizard").hidden) wzRender();
+  }
   if (role === "guest") {
     $("guestTitle").textContent = gWelcomed ? `Deze telefoon: ${tn(myTeam)}` : `Verbinden met spel ${gCode}…`;
     $("guestStatus").textContent = gFailed ? gFailed
@@ -1144,8 +1260,8 @@ function updateDuo(){
   $("duoMine").hidden = !n;
   $("myA").textContent = tn("A"); $("myB").textContent = tn("B");
   $("myA").setAttribute("aria-pressed", String(myTeam === "A")); $("myB").setAttribute("aria-pressed", String(myTeam === "B"));
-  $("duoStatus").innerHTML = n ? `<span class="ok">Verbonden.</span> ${esc(tn(other(myTeam)))} speelt op de andere telefoon.`
-    : hostCode ? "Het andere team opent BONK en tikt op <i>Meedoen</i> met deze code." : "Spelcode ophalen…";
+  $("duoStatus").innerHTML = n ? `<span class="ok">✓ Verbonden!</span> ${esc(tn(other(myTeam)))} speelt op de andere telefoon.`
+    : hostCode ? `<span class="waitDot"></span>Wachten op de andere telefoon…` : "Spelcode ophalen…";
 }
 
 
@@ -1182,7 +1298,7 @@ function updateHostUi(){
 }
 function joinUrl(){ return location.origin + location.pathname + "?join=" + hostCode; }
 function showCode(){
-  for (const [id, size] of [["qrMini", 76]]) {
+  for (const [id, size] of [["qrMini", 146]]) {
     const q = $(id); q.innerHTML = "";
     try { new QRCode(q, { text: joinUrl(), width: size, height: size, colorDark: "#1b2a2e", colorLight: "#f7f1e4", correctLevel: QRCode.CorrectLevel.M }); } catch(e){}
   }
@@ -1193,11 +1309,10 @@ function handleCmd(d){
   switch (d.c) {
     case "start":  if (!running && !counting && gateInfo && !winTeam && S.team === gt) beginTurn(true); break;
     case "award":  if (running && S.team === gt && Number(d.seq) === cardSeq && [1,3,-1].includes(Number(d.d))) award(Number(d.d)); break;
-    case "skip":   if (S.team === gt && Number(d.seq) === cardSeq) skipCard(); break;
     case "pause":  if (S.team === gt) pause(); break;
     case "resume": resume(); break;
     case "stop":   if (running) endTurn(true); break;
-    case "name":   if (d.team === other(myTeam)) { S.names[d.team] = String(d.v || "").slice(0, 16); save(); render(); if (!$("gate").hidden && gateInfo) showGate(gateInfo.title, gateInfo.result); } break;
+    case "name":   if (d.team === other(myTeam)) { S.names[d.team] = String(d.v || "").slice(0, 16); save(); render(); if (!$("gate").hidden && gateInfo) showGate(gateInfo.title, gateInfo.result); if (!$("wizard").hidden) wzRender(); } break;
     case "newgame": if (winTeam) newGame(); break;
   }
 }
@@ -1327,7 +1442,7 @@ function applyState(d){
   S.team = d.team === "B" ? "B" : "A";
   S.score = { A: num(d.score && d.score.A, 0), B: num(d.score && d.score.B, 0) };
   S.names = { A: String((d.names && d.names.A) || "").slice(0, 16), B: String((d.names && d.names.B) || "").slice(0, 16) };
-  S.dur = [30,60,90,120].includes(d.dur) ? d.dur : 90;
+  S.dur = [30,45,60].includes(d.dur) ? d.dur : 60;
   S.target = [0,15,30,50].includes(d.target) ? d.target : 30;
   const seq = num(d.seq, 0), cardChanged = seq !== mirror.seq, wasRunning = running;
   mirror = { card: { easy: String((d.card && d.card.easy) || "—"), hard: String((d.card && d.card.hard) || "—") }, idx: num(d.idx, 0), total: num(d.total, 0), seq, v: d.v };
@@ -1386,11 +1501,11 @@ $("guestRetry").onclick = () => connectGuest(gCode);
 $("leaveBtn").onclick = leaveGame;
 $("menuLeaveBtn").onclick = leaveGame;
 document.addEventListener("click", e => { const b = e.target.closest(".mySeg button"); if (b) setMyTeam(b.dataset.my); });
-$("bonkBtn").onclick = () => {
+onTap($("bonkBtn"), () => {
   const now = Date.now(); if (now - lastBonk < 600) return; lastBonk = now;
   audioOn();
   if (role === "guest") sendBonk(now); else award(-1);
-};
+});
 
 /* ---------- app-gevoel: schermvullend en installeren ---------- */
 const isApp = () => matchMedia("(display-mode: standalone), (display-mode: fullscreen)").matches || navigator.standalone === true;
@@ -1444,8 +1559,71 @@ function showLobby(){ $("lobbyResume").hidden = !S.log.length; $("lobby").hidden
 $("lobbyNew").onclick = () => {
   audioOn();
   if (S.log.length) { advanceCard(); cardSeq++; resetScores(); }
-  $("lobby").hidden = true;
+  openWizard();
 };
+
+/* ---------- spel maken: stap voor stap ---------- */
+var wzStep = 1;
+const WZ_STEPS = 5;
+const SUM_IC = {
+  team: '<svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M3 19c0-3 2.5-5 5-5s5 2 5 5M11 19c0-3 2.5-5 5-5s5 2 5 5"/></svg>',
+  trophy: '<svg viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 01-10 0z"/><path d="M7 6H4a3 3 0 003 4M17 6h3a3 3 0 01-3 4M12 14v4M8 21h8"/></svg>',
+  timer: '<svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M10 2h4"/></svg>',
+  phones: '<svg viewBox="0 0 24 24"><rect x="3" y="4" width="8" height="15" rx="2"/><rect x="13" y="4" width="8" height="15" rx="2"/></svg>'
+};
+function wzRender(){
+  document.querySelectorAll(".wzChoice[data-t]").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.t === S.target)));
+  document.querySelectorAll(".wzChoice[data-dur]").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.dur === S.dur)));
+  for (const t of ["A","B"]) { const inp = $("wzName"+t); if (document.activeElement !== inp) inp.value = S.names[t] || ""; }
+  document.querySelectorAll("#wzDots i").forEach((d, i) => d.classList.toggle("on", i < wzStep));
+  $("wzCount").textContent = `${wzStep} / ${WZ_STEPS}`;
+  const next = $("wzNext");
+  next.textContent = wzStep === 4 ? (linked() ? "Verder" : "Verder met één telefoon")
+    : wzStep === WZ_STEPS ? (canStartHere() ? `Start · ${tn(S.team)} begint` : "Klaar")
+    : "Volgende";
+  if (wzStep === WZ_STEPS) {
+    const ic = k => `<span class="ic b" aria-hidden="true">${SUM_IC[k]}</span>`;
+    $("wzSum").innerHTML =
+      `<li>${ic("team")}<span><span class="na">${esc(tn("A"))}</span><span class="vs">tegen</span><span class="nb">${esc(tn("B"))}</span></span></li>` +
+      `<li>${ic("trophy")}<span>${S.target ? `Tot ${S.target} punten` : "Zonder eindscore"}</span></li>` +
+      `<li>${ic("timer")}<span>${S.dur} seconden per beurt</span></li>` +
+      `<li>${ic("phones")}<span>${linked() ? `Twee telefoons · ${esc(tn(other(myTeam)))} op de andere` : "Eén telefoon, die geef je door"}</span></li>`;
+  }
+}
+function wzShow(step){
+  wzStep = Math.max(1, Math.min(WZ_STEPS, step));
+  document.querySelectorAll(".wzPage").forEach(p => {
+    const n = +p.dataset.step;
+    p.classList.toggle("active", n === wzStep);
+    p.classList.toggle("left", n < wzStep);
+    p.setAttribute("aria-hidden", String(n !== wzStep));
+  });
+  wzRender();
+  if (wzStep === 1) setTimeout(() => { if (wzStep === 1 && !$("wizard").hidden && !S.names.A) $("wzNameA").focus(); }, 450);
+}
+function openWizard(){ $("lobby").hidden = true; $("gate").hidden = true; $("wizard").hidden = false; wzShow(1); }
+$("wzNext").onclick = () => {
+  if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  if (wzStep < WZ_STEPS) return wzShow(wzStep + 1);
+  $("wizard").hidden = true;
+  showGate("Klaar om te spelen?");
+  if (canStartHere()) beginTurn();
+};
+$("wzBack").onclick = () => { if (wzStep > 1) wzShow(wzStep - 1); else { $("wizard").hidden = true; showLobby(); } };
+document.addEventListener("click", e => {
+  const c = e.target.closest(".wzChoice"); if (!c) return;
+  if (c.dataset.t !== undefined) S.target = +c.dataset.t;
+  if (c.dataset.dur !== undefined) { S.dur = +c.dataset.dur; remainingMs = S.dur * 1000; renderTimer(); }
+  save(); hostPresence(); wzRender();
+  const at = wzStep; setTimeout(() => { if (wzStep === at && !$("wizard").hidden) wzShow(at + 1); }, 420);   // kiezen = meteen door
+});
+for (const t of ["A","B"]) {
+  $("wzName"+t).addEventListener("input", e => {
+    S.names[t] = e.target.value.slice(0, 16); save();
+    $("tnA").textContent = tn("A"); $("tnB").textContent = tn("B"); hostPresence();
+  });
+  $("wzName"+t).addEventListener("keydown", e => { if (e.key === "Enter") { if (t === "A") $("wzNameB").focus(); else $("wzNext").click(); } });
+}
 $("lobbyResume").onclick = () => { $("lobby").hidden = true; };
 $("lobbyJoin").onclick = openJoin;
 $("lobbyRules").onclick = openRules;
