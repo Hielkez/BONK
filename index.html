@@ -241,6 +241,12 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
 #gate:not(.home) .tnInput{border-bottom-color:transparent}
 #gate[data-team="A"] .sd.a .tnInput{color:var(--a)} #gate[data-team="B"] .sd.b .tnInput{color:var(--b)}
 .namesHint{margin:-8px 0 0;font-size:12px;color:var(--muted);text-align:center}
+.kBar{position:relative;width:100%;max-width:340px;height:40px;border-radius:999px;background:var(--raise);overflow:hidden}
+.kFill{position:absolute;inset:0 auto 0 0;width:100%;border-radius:999px;background:var(--good);transition:background-color .3s}
+.kBar.low .kFill{background:var(--bad)}
+.kBar.still .kFill{background:var(--muted)}
+#kSecs{position:relative;display:grid;place-items:center;height:100%;font-family:var(--display);font-weight:800;font-size:20px;font-variant-numeric:tabular-nums;color:var(--fg);text-shadow:0 1px 3px rgba(0,0,0,.55)}
+.kBar.low #kSecs{animation:pulse 1s ease-in-out infinite}
 </style>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -485,6 +491,7 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
   <div class="krantInner" id="krantInner">
     <p class="brand">BONK<span>!</span></p>
     <p class="kStatus" id="kStatus">Zoeken naar de telefoon met de kaarten…</p>
+    <div class="kBar" id="kBar" hidden><div class="kFill" id="kFill"></div><span id="kSecs">90</span></div>
     <button class="bonkBtn" id="bonkBtn" disabled>BONK!</button>
     <p class="gHint">Tik als de omschrijver een woord van meer dan één lettergreep zegt. Het andere team krijgt dan −1.</p>
     <button class="secBtn" id="krantRetry" hidden style="padding-inline:20px">Opnieuw verbinden</button>
@@ -494,7 +501,7 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
 
 <script>
 (function(){
-const VERSION = "v8 · 23 okt 20:10";
+const VERSION = "v9 · 23 okt 20:15";
 document.querySelectorAll("[data-ver]").forEach(el => el.textContent = "BONK " + VERSION);
 
 const DEFAULT_CARDS = [
@@ -843,7 +850,7 @@ try { CID = sessionStorage.getItem("bonk-cid"); } catch(e){}
 if (!CID) { CID = Math.random().toString(36).slice(2, 10); try { sessionStorage.setItem("bonk-cid", CID); } catch(e){} }
 
 /* spel-telefoon */
-function hostState(){ return { t:"state", team:S.team, running, paused, secs:Math.ceil(remainingMs/1000), seq:cardSeq, lock:bonkLock, name:tn(S.team) }; }
+function hostState(){ return { t:"state", team:S.team, running, paused, secs:Math.ceil(remainingMs/1000), seq:cardSeq, lock:bonkLock, name:tn(S.team), ms:Math.round(remainingMs), dur:S.dur }; }
 function hostPresence(){
   if (role !== "host") return;
   const m = hostState();
@@ -962,9 +969,11 @@ function connectKrant(code){
       if (d.t === "ack") { const t = pendingBonks.get(d.id); if (t) { clearTimeout(t); pendingBonks.delete(d.id); } return; }
       if (d.t !== "state") return;
       if (typeof d.seq === "number") krantSeq = d.seq;
+      kTimer = { ms: Number(d.ms) || (Number(d.secs) || 0) * 1000, dur: (Number(d.dur) || 90) * 1000, live: !!(d.running && !d.paused), at: performance.now() };
+      $("kBar").hidden = !d.running; $("kBar").classList.toggle("still", !!d.paused);
       if (d.running && d.lock) { setKrantStatus("BONK! Volgend woord komt eraan…", false); return; }
       const team = (typeof d.name === "string" && d.name.trim()) ? d.name.trim().slice(0, 16) : `Team ${d.team === "B" ? "B" : "A"}`;
-      if (d.running && !d.paused) setKrantStatus(`${team} omschrijft · ${Number(d.secs) || 0} s`, true);
+      if (d.running && !d.paused) setKrantStatus(`${team} omschrijft`, true);
       else setKrantStatus(d.running ? "Pauze" : `Wachten tot ${team} start`, false);
     });
     c.on("close", () => {
@@ -977,6 +986,17 @@ function connectKrant(code){
 }
 var krantSeq;
 const bonkSeqs = new Map();   // BONK-id -> woord waarop getikt werd
+/* aftelbalk op de krant-telefoon, vloeiend tussen de updates door */
+var kTimer = null;
+(function kTick(){
+  if (role === "krant" && kTimer && !$("kBar").hidden) {
+    const rem = kTimer.live ? Math.max(0, kTimer.ms - (performance.now() - kTimer.at)) : kTimer.ms;
+    $("kFill").style.width = Math.min(100, rem / kTimer.dur * 100) + "%";
+    $("kSecs").textContent = Math.ceil(rem / 1000);
+    $("kBar").classList.toggle("low", kTimer.live && rem <= 10000);
+  }
+  requestAnimationFrame(kTick);
+})();
 function sendBonk(id){
   if (!bonkSeqs.has(id)) bonkSeqs.set(id, krantSeq);
   const seq = bonkSeqs.get(id);
