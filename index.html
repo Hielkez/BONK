@@ -202,6 +202,10 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
 .qr img,.qr canvas{display:block}
 .code{font-family:var(--display);font-weight:800;font-size:40px;letter-spacing:.15em;font-variant-numeric:tabular-nums}
 #gateCode b{color:var(--fg);letter-spacing:.12em;font-size:16px}
+.installBar{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:var(--raise);font-size:14px;line-height:1.4}
+.installBar span{flex:1;min-width:0}
+.installBtn{flex:none;padding:8px 14px;border-radius:999px;background:var(--fg);color:var(--ink);font-weight:700;font-size:14px}
+.installX{flex:none;width:32px;height:32px;border-radius:50%;color:var(--muted)}
 .ver{margin:0;text-align:center;font-size:12px;color:var(--muted);opacity:.7;font-variant-numeric:tabular-nums}
 </style>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
@@ -263,6 +267,11 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
     <div class="ghostRow">
       <button class="ghost" id="gateRulesBtn">Spelregels</button>
       <button class="ghost" id="gateMenuBtn">Menu</button>
+    </div>
+    <div class="installBar" id="installBar" hidden>
+      <span id="installText">Speel BONK als app: schermvullend en met een eigen icoon.</span>
+      <button class="installBtn" id="installBtn">Installeren</button>
+      <button class="installX" id="installClose" aria-label="Verbergen">✕</button>
     </div>
     <p class="ver" data-ver></p>
   </div>
@@ -415,7 +424,7 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
 
 <script>
 (function(){
-const VERSION = "v3 · 23 okt 19:41";
+const VERSION = "v4 · 23 okt 19:45";
 document.querySelectorAll("[data-ver]").forEach(el => el.textContent = "BONK " + VERSION);
 
 const DEFAULT_CARDS = [
@@ -508,6 +517,7 @@ function showGate(title, result){
   const hideKrant = !!result || conns.size > 0;
   $("gateKrantBtn").hidden = hideKrant; $("gateKrantNote").hidden = true;
   $("gateCode").hidden = hideKrant || !hostCode;
+  if (result) $("installBar").hidden = true; else setupInstallBar();
   $("gate").hidden = false;
 }
 function tick(){
@@ -602,7 +612,7 @@ function resetScores(){
 }
 
 /* ---------- events ---------- */
-$("startBtn").onclick = startTurn;
+$("startBtn").onclick = () => { goFullscreen(); startTurn(); };
 $("easyBtn").onclick = ()=>award(1);
 $("hardBtn").onclick = ()=>award(3);
 $("minusBtn").onclick = ()=>award(-1);
@@ -882,7 +892,7 @@ $("joinGo").onclick = () => {
   const code = $("joinCode").value.toUpperCase().replace(/[^A-Z0-9]/g, "");
   if (code.length !== 4) return joinMsg("De code heeft 4 tekens.");
   if (code === hostCode) return joinMsg("Dat is de code van deze telefoon. Typ de code van de telefoon met de kaarten.");
-  audioOn(); krantCode = code; enterKrant(code);
+  audioOn(); goFullscreen(); krantCode = code; enterKrant(code);
 };
 $("krantRetry").onclick = () => connectKrant(krantCode);
 $("krantExit").onclick = () => {
@@ -899,6 +909,38 @@ $("bonkBtn").onclick = () => {
   audioOn(); sendBonk(now);
   bonkFx($("krantInner"));
 };
+
+/* ---------- app-gevoel: schermvullend en installeren ---------- */
+const isApp = () => matchMedia("(display-mode: standalone), (display-mode: fullscreen)").matches || navigator.standalone === true;
+const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+function goFullscreen(){
+  // Alleen als het spel niet als app geïnstalleerd is; iPhone ondersteunt dit niet in de browser
+  if (isApp() || document.fullscreenElement) return;
+  const el = document.documentElement, fn = el.requestFullscreen || el.webkitRequestFullscreen;
+  if (!fn) return;
+  try { const p = fn.call(el, { navigationUI: "hide" }); if (p && p.catch) p.catch(() => {}); } catch(e){}
+}
+let installPrompt = null;
+function setupInstallBar(){
+  let dismissed = false; try { dismissed = !!localStorage.getItem("bonk-install-hidden"); } catch(e){}
+  if (isApp() || dismissed) { $("installBar").hidden = true; return; }
+  if (isIOS) {
+    $("installText").textContent = "Speel BONK als app: tik op Deel en kies Zet op beginscherm.";
+    $("installBtn").hidden = true; $("installBar").hidden = false;
+  } else if (installPrompt) {
+    $("installBtn").hidden = false; $("installBar").hidden = false;
+  }
+}
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installPrompt = e; setupInstallBar(); });
+window.addEventListener("appinstalled", () => { installPrompt = null; $("installBar").hidden = true; });
+$("installBtn").onclick = async () => {
+  if (!installPrompt) return;
+  installPrompt.prompt();
+  try { await installPrompt.userChoice; } catch(e){}
+  installPrompt = null; $("installBar").hidden = true;
+};
+$("installClose").onclick = () => { $("installBar").hidden = true; try { localStorage.setItem("bonk-install-hidden", "1"); } catch(e){} };
+setupInstallBar();
 
 render();
 showGate(S.log.length ? "Verder spelen" : "Klaar om te spelen?");
