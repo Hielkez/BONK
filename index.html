@@ -89,13 +89,14 @@ button:focus-visible{outline:3px solid var(--b);outline-offset:2px}
 .hard .wTag b{background:var(--ink);color:var(--b)}
 /* kaart-overgangen */
 /* één kaart = twee woorden: de hele kaart beweegt als geheel */
-.stage.in-deal{animation:inDeal .4s cubic-bezier(.2,.9,.3,1.15) both}
+.stage.in-deal{animation:inDeal .45s cubic-bezier(.2,.9,.3,1.12) both}
 .stage.in-ok, .stage.in-skip{animation:flyIn .4s cubic-bezier(.2,.9,.3,1.08) both}
 .stage.in-bonk{animation:inDrop .4s cubic-bezier(.2,.9,.3,1.2) both}
 .stage.flyOut{animation:flyOut .24s cubic-bezier(.55,0,.9,.45) forwards;pointer-events:none}
 @keyframes flyOut{to{transform:translateX(-125%) rotate(-9deg);opacity:.2}}
 @keyframes flyIn{from{transform:translateX(120%) rotate(7deg)}}
-@keyframes inDeal{from{transform:translateY(28px) scale(.95);opacity:0}}
+@keyframes inDeal{from{transform:translateY(45%) rotate(4deg) scale(.9);opacity:0}}
+.stage.preDeal{opacity:0}
 @keyframes inFlip{from{transform:perspective(800px) rotateX(-80deg);opacity:0}}
 @keyframes inSlide{from{transform:translateX(70%) rotate(5deg);opacity:0}}
 @keyframes inDrop{from{transform:translateY(-36px) scale(1.04);opacity:0}}
@@ -217,6 +218,13 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
 .kgText b{font-family:var(--display);font-weight:800;font-size:19px}
 .kgText small{font-size:13px;color:var(--muted)}
 .krantInner{max-width:440px;width:100%;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:22px;text-align:center}
+.kScore{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:360px}
+.kTeam{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 12px;border-radius:var(--r);background:var(--raise);border:2px solid transparent;min-width:0}
+.kTeam span{font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kTeam b{font-family:var(--display);font-weight:800;font-size:40px;line-height:1.05;font-variant-numeric:tabular-nums}
+.kTeam.a.active{border-color:var(--a)} .kTeam.b.active{border-color:var(--b)}
+.kTeam.a.active span{color:var(--a)} .kTeam.b.active span{color:var(--b)}
+.kGoal{grid-column:1 / -1;margin:2px 0 0;font-size:14px;font-weight:700;color:var(--muted)}
 .kStatus{margin:0;font-size:18px;font-weight:600;font-variant-numeric:tabular-nums}
 .bonkBtn{width:min(78vw,300px);max-width:100%;aspect-ratio:1;border-radius:50%;background:var(--bad);color:#fff;font-family:var(--display);font-weight:800;font-size:min(16vw,64px);box-shadow:0 10px 0 #9e2f2d,0 0 0 12px rgba(240,98,95,.18);transition:transform .06s, box-shadow .06s}
 .bonkBtn:active{transform:translateY(8px);box-shadow:0 2px 0 #9e2f2d,0 0 0 12px rgba(240,98,95,.18)}
@@ -287,7 +295,7 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
 .team.bump{animation:bump .4s cubic-bezier(.2,1.6,.4,1)}
 @keyframes bump{40%{transform:scale(1.12)}}
 /* scores die omhoog rollen */
-.tscore.roll,.sd b.roll{display:inline-block;animation:roll .35s cubic-bezier(.2,.9,.3,1.2)}
+.tscore.roll,.sd b.roll,.kTeam b.roll{display:inline-block;animation:roll .35s cubic-bezier(.2,.9,.3,1.2)}
 @keyframes roll{from{transform:translateY(55%);opacity:0}}
 /* laatste seconden: rode gloed aan de rand */
 .hurry{position:fixed;inset:0;z-index:15;pointer-events:none;box-shadow:inset 0 0 0 0 rgba(240,98,95,0);opacity:0;transition:opacity .3s}
@@ -802,7 +810,11 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 <!-- Krant-telefoon -->
 <section class="overlay" id="krantOv" hidden>
   <div class="krantInner" id="krantInner">
-    <p class="brand">BONK<span>!</span></p>
+    <div class="kScore" aria-label="Stand">
+      <div class="kTeam a" id="kTeamA"><span id="kNameA">Team A</span><b id="kScoreA">0</b></div>
+      <div class="kTeam b" id="kTeamB"><span id="kNameB">Team B</span><b id="kScoreB">0</b></div>
+      <p class="kGoal" id="kGoal">Spel tot 30 punten</p>
+    </div>
     <p class="kStatus" id="kStatus">Wachten…</p>
     <div class="kBar" id="kBar" hidden><div class="kFill" id="kFill"></div><span id="kSecs">90</span></div>
     <div class="kWords" id="kWords">
@@ -817,7 +829,7 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 
 <script>
 (function(){
-const VERSION = "v37 · 24 okt 00:45";
+const VERSION = "v38 · 24 okt 01:05";
 document.querySelectorAll("[data-ver]").forEach(el => el.textContent = "BONK " + VERSION);
 
 const DEFAULT_CARDS = [
@@ -880,7 +892,7 @@ function renderWords(anim){
   }
   $("counter").textContent = role === "guest" ? `kaart ${mirror.idx+1} / ${mirror.total}` : `kaart ${S.idx+1} / ${S.cards.length}`;
   const st = $("stage");
-  st.classList.remove("hitting", "flyOut", "in-deal", "in-ok", "in-skip", "in-bonk");
+  st.classList.remove("hitting", "flyOut", "preDeal", "in-deal", "in-ok", "in-skip", "in-bonk");
   $("easyBtn").classList.remove("hit"); $("hardBtn").classList.remove("hit");
   if (anim) { void st.offsetWidth; st.classList.add("in-" + anim); startCool(); }
 }
@@ -905,6 +917,10 @@ function render(){
   $("teamB").classList.toggle("active", S.team === "B");
   $("turnLabel").textContent = tn(S.team);
   $("tnA").textContent = tn("A"); $("tnB").textContent = tn("B");
+  $("kNameA").textContent = tn("A"); $("kNameB").textContent = tn("B");
+  setScore($("kScoreA"), S.score.A); setScore($("kScoreB"), S.score.B);
+  $("kGoal").textContent = S.target ? `Spel tot ${S.target} punten` : "Spel zonder eindstand";
+  $("kTeamA").classList.toggle("active", S.team === "A"); $("kTeamB").classList.toggle("active", S.team === "B");
   renderWords(); renderTimer(); hostPresence(); updateRoleView();
 }
 
@@ -1309,6 +1325,7 @@ function runCountdown(at){
   $("countOv").hidden = false;
   num.textContent = ""; num.className = "";
   const ring = $("countRing"), ov = $("countOv");
+  $("stage").classList.add("preDeal");   // kaarten pas laten zien als ze na GO! binnenkomen
   ring.className = "countRing"; ov.classList.remove("out"); ring.style.setProperty("--step", COUNT_STEP + "ms");
   steps.forEach((txt, i) => {
     const delay = begin + i * COUNT_STEP - serverNow();
@@ -1322,8 +1339,10 @@ function runCountdown(at){
       try { navigator.vibrate && navigator.vibrate(go ? 60 : 20); } catch(e){}
     }, Math.max(0, delay));
   });
-  setTimeout(() => { ov.classList.add("out"); }, Math.max(0, at - serverNow() - 200));
-  setTimeout(() => { ov.hidden = true; ov.classList.remove("out"); }, Math.max(0, at - serverNow() + 60));
+  setTimeout(() => { ov.classList.add("out"); }, Math.max(0, at - serverNow() - 40));
+  setTimeout(() => { ov.hidden = true; ov.classList.remove("out"); }, Math.max(0, at - serverNow() + 220));
+  // vangnet: kwam er geen nieuwe kaart binnen (bijv. de tweede telefoon), deel de huidige alsnog uit
+  setTimeout(() => { if ($("stage").classList.contains("preDeal")) renderWords("deal"); }, Math.max(0, at - serverNow() + 30));
 }
 
 /* --- wat deze telefoon nu laat zien: kaarten of krant --- */
