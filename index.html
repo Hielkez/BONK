@@ -202,6 +202,7 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
 .qr img,.qr canvas{display:block}
 .code{font-family:var(--display);font-weight:800;font-size:40px;letter-spacing:.15em;font-variant-numeric:tabular-nums}
 #gateCode b{color:var(--fg);letter-spacing:.12em;font-size:16px}
+.ver{margin:0;text-align:center;font-size:12px;color:var(--muted);opacity:.7;font-variant-numeric:tabular-nums}
 </style>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -263,6 +264,7 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
       <button class="ghost" id="gateRulesBtn">Spelregels</button>
       <button class="ghost" id="gateMenuBtn">Menu</button>
     </div>
+    <p class="ver" data-ver></p>
   </div>
 </section>
 
@@ -374,6 +376,7 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
       <h3>Puntenstapel</h3>
       <ul class="log" id="log"></ul>
     </div>
+    <p class="ver" data-ver></p>
   </div>
 </div>
 
@@ -412,6 +415,9 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
 
 <script>
 (function(){
+const VERSION = "v3 · 23 okt 19:41";
+document.querySelectorAll("[data-ver]").forEach(el => el.textContent = "BONK " + VERSION);
+
 const DEFAULT_CARDS = [
   ["Fiets","Tandem"],["Strand","Zandkasteel"],["Trein","Conducteur"],["Pizza","Calzone"],
   ["Hond","Dalmatiër"],["Voetbal","Buitenspel"],["Koffie","Cappuccino"],["Regen","Regenboog"],
