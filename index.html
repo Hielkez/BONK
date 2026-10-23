@@ -435,9 +435,11 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 .kWords b{overflow-wrap:normal;word-break:normal;hyphens:auto}
 .kWords b.long{font-size:19px}
 /* spelregels: panelen in BONK-stijl */
-.rulesSheet{gap:18px;background:var(--bg-deep);padding-top:0}
+.rulesSheet{gap:18px;background:var(--bg-deep);padding-top:0;height:100%;max-height:none;margin-top:0;border-radius:0;max-width:none;padding-left:max(18px, calc((100% - 560px) / 2), env(safe-area-inset-left, 0px));padding-right:max(18px, calc((100% - 560px) / 2), env(safe-area-inset-right, 0px))}
+.rulesWrap{background:var(--bg-deep)}
+#rules:not([hidden]) .rulesSheet{animation:fadeIn .25s ease-out}
 /* titel + sluitknop blijven altijd zichtbaar bovenin, ook als iOS het paneel al een stukje gescrold opent */
-.rulesSheet .sheetHead{position:sticky;top:0;z-index:3;background:var(--bg-deep);padding:18px 0 8px;margin-bottom:-8px}
+.rulesSheet .sheetHead{position:sticky;top:0;z-index:3;background:var(--bg-deep);box-shadow:0 0 0 100vmax var(--bg-deep);clip-path:inset(0 -100vmax);padding:max(18px, env(safe-area-inset-top, 0px)) 0 8px;margin-bottom:-8px}
 .rulesLogo{font-family:var(--display);font-weight:800;font-size:26px;margin:0}
 .rulesLogo span{color:var(--b);display:inline-block;transform:rotate(-4deg);text-shadow:0 3px 0 var(--ink)}
 .rp{position:relative;padding:20px 18px 18px 18px;border-radius:20px;display:flex;flex-direction:column;gap:12px;box-shadow:0 6px 0 rgba(0,0,0,.35)}
@@ -778,7 +780,7 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 
 <script>
 (function(){
-const VERSION = "v29 · 23 okt 23:40";
+const VERSION = "v30 · 23 okt 23:45";
 document.querySelectorAll("[data-ver]").forEach(el => el.textContent = "BONK " + VERSION);
 
 const DEFAULT_CARDS = [
