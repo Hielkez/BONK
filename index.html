@@ -67,6 +67,7 @@ button:focus-visible{outline:3px solid var(--b);outline-offset:2px}
 /* Meta row */
 .meta{display:flex;justify-content:space-between;align-items:center;font-size:14px;color:var(--muted)}
 .meta strong{color:var(--fg);font-weight:700}
+.meta > span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .menuBtn{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;background:var(--raise);font-weight:600;font-size:14px}
 .menuBtn svg{width:18px;height:18px}
 
@@ -514,7 +515,7 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
   </header>
 
   <div class="meta">
-    <span><strong id="turnLabel">Team A</strong> · <span id="counter">kaart 1 / 40</span></span>
+    <span><strong id="turnLabel">Team A</strong> is aan de beurt<span id="counter" hidden></span></span>
     <span class="chip" id="krantChip" hidden>2 telefoons</span>
     <button class="menuBtn" id="menuBtn" aria-label="Menu openen">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>Menu
@@ -800,7 +801,7 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 
 <script>
 (function(){
-const VERSION = "v34 · 24 okt 00:20";
+const VERSION = "v35 · 24 okt 00:25";
 document.querySelectorAll("[data-ver]").forEach(el => el.textContent = "BONK " + VERSION);
 
 const DEFAULT_CARDS = [
