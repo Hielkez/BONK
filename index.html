@@ -412,9 +412,15 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 .wzName input::placeholder{color:var(--muted);opacity:.6}
 .wzVs{margin:-6px 0;text-align:center;font-weight:700;color:var(--muted);font-size:14px}
 .wzChoices{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.wzChoices.three{grid-template-columns:1fr}
+.wzChoices.durs{grid-template-columns:repeat(3,1fr);gap:10px}
+.wzChoice.dur{align-items:center;text-align:center;padding:22px 6px 16px;gap:2px}
+.wzChoice.dur b{font-size:54px;letter-spacing:-.02em}
+.wzChoice.dur small{font-size:14px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.wzChoice.dur em{font-style:normal;font-size:13px;font-weight:700;padding:4px 11px;border-radius:999px;background:var(--bg-deep);color:var(--fg);margin-top:12px}
+.pie{width:44px;height:44px;border-radius:50%;margin-bottom:12px;background:conic-gradient(var(--muted) calc(var(--f) * 360deg), color-mix(in srgb, var(--fg) 12%, transparent) 0);box-shadow:0 0 0 3px var(--bg-deep);transition:background .2s}
+.wzChoice.dur[aria-pressed="true"] .pie{background:conic-gradient(var(--b) calc(var(--f) * 360deg), color-mix(in srgb, var(--fg) 12%, transparent) 0)}
+.wzChoice.dur[aria-pressed="true"] em{background:var(--b);color:var(--ink)}
 .wzChoice{display:flex;flex-direction:column;gap:4px;padding:18px 16px;border-radius:var(--r);background:var(--raise);border:2px solid transparent;text-align:left;transition:border-color .2s, background-color .2s, transform .12s}
-.wzChoices.three .wzChoice{flex-direction:row;align-items:baseline;gap:12px}
 .wzChoice b{font-family:var(--display);font-weight:800;font-size:38px;line-height:1}
 .wzChoice small{font-size:14px;color:var(--muted)}
 .wzChoice:active{transform:scale(.97)}
@@ -615,17 +621,17 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
         <div class="wzChoices">
           <button class="wzChoice" data-t="15"><b>15</b><small>Kort potje</small></button>
           <button class="wzChoice" data-t="30"><b>30</b><small>Normaal</small></button>
-          <button class="wzChoice" data-t="50"><b>50</b><small>Lange avond</small></button>
+          <button class="wzChoice" data-t="50"><b>50</b><small>Lang potje</small></button>
           <button class="wzChoice" data-t="0"><b>∞</b><small>Geen einde</small></button>
         </div>
       </div>
       <div class="wzPage" data-step="3">
         <p class="wzKicker">Stap 3</p>
         <h2 class="wzTitle">Hoe lang duurt een beurt?</h2>
-        <div class="wzChoices three">
-          <button class="wzChoice" data-dur="30"><b>30</b><small>seconden · snel</small></button>
-          <button class="wzChoice" data-dur="45"><b>45</b><small>seconden</small></button>
-          <button class="wzChoice" data-dur="60"><b>60</b><small>seconden · rustig</small></button>
+        <div class="wzChoices durs">
+          <button class="wzChoice dur" data-dur="30"><span class="pie" style="--f:.5"></span><b>30</b><small>sec</small><em>Snel</em></button>
+          <button class="wzChoice dur" data-dur="45"><span class="pie" style="--f:.75"></span><b>45</b><small>sec</small><em>Normaal</em></button>
+          <button class="wzChoice dur" data-dur="60"><span class="pie" style="--f:1"></span><b>60</b><small>sec</small><em>Rustig</em></button>
         </div>
       </div>
       <div class="wzPage" data-step="4">
@@ -794,7 +800,7 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 
 <script>
 (function(){
-const VERSION = "v32 · 24 okt 00:05";
+const VERSION = "v33 · 24 okt 00:10";
 document.querySelectorAll("[data-ver]").forEach(el => el.textContent = "BONK " + VERSION);
 
 const DEFAULT_CARDS = [
