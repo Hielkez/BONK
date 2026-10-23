@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#12303a">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="BONK">
 <meta name="description" content="BONK! Omschrijf woorden met alleen woorden van één lettergreep. Fout? BONK met de krant.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -475,14 +475,9 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 .wzPage > :first-child{margin-top:auto}
 .wzPage > :last-child{margin-bottom:auto}
 .sheet{-webkit-overflow-scrolling:touch}
-/* iOS beginscherm-app: de hoogte wordt zonder statusbalk berekend, waardoor onderin een lege balk bleef.
-   In app-modus daarom expliciet de volledige schermhoogte gebruiken. */
-@media (display-mode: standalone), (display-mode: fullscreen) {
-  html, body{bottom:auto;height:100vh;height:100lvh}
-  .overlay, .sheetWrap, .bonkFx, .stamp, .countOv, .hurry{bottom:auto;height:100vh;height:100lvh}
-}
-html.ios-app, html.ios-app body{bottom:auto;height:100vh;height:100lvh}
-html.ios-app .overlay, html.ios-app .sheetWrap, html.ios-app .bonkFx, html.ios-app .stamp, html.ios-app .countOv, html.ios-app .hurry{bottom:auto;height:100vh;height:100lvh}
+/* iOS 26 heeft een bug (WebKit 301108): met een doorzichtige statusbalk ("black-translucent")
+   wordt de app-pagina precies de statusbalkhoogte te kort en blijft onderin een lege strook die
+   niets kan vullen. Daarom een gewone, ondoorzichtige statusbalk (zie meta-tag in de head). */
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
@@ -780,9 +775,8 @@ html.ios-app .overlay, html.ios-app .sheetWrap, html.ios-app .bonkFx, html.ios-a
 </section>
 
 <script>
-if (navigator.standalone === true) document.documentElement.classList.add("ios-app");
 (function(){
-const VERSION = "v24 · 24 okt 00:35";
+const VERSION = "v25 · 23 okt 23:10";
 document.querySelectorAll("[data-ver]").forEach(el => el.textContent = "BONK " + VERSION);
 
 const DEFAULT_CARDS = [
