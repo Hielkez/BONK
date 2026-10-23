@@ -119,6 +119,7 @@ button:focus-visible{outline:3px solid var(--b);outline-offset:2px}
 .sec{display:flex;flex-direction:column;gap:10px}
 .sec h3{margin:0;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:4px;border-radius:14px;background:var(--bg-deep)}
+.seg4{grid-template-columns:repeat(4,1fr)}
 .seg button{min-height:44px;border-radius:10px;font-weight:700;font-variant-numeric:tabular-nums}
 .seg button[aria-pressed="true"]{background:var(--fg);color:var(--ink)}
 .seg button:disabled{opacity:.4}
@@ -261,7 +262,7 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
     <p class="gTitle" id="gTitle">Klaar om te spelen?</p>
     <p class="gResult" id="gResult" hidden></p>
     <h1 class="gTeam" id="gTeam">Team A</h1>
-    <div class="gScores"><span>Team A <b id="gsA">0</b></span><span>·</span><span>Team B <b id="gsB">0</b></span></div>
+    <div class="gScores"><span>Team A <b id="gsA">0</b></span><span>·</span><span>Team B <b id="gsB">0</b></span><span id="gsTarget"></span></div>
     <button class="bigBtn" id="startBtn">Start 90 seconden</button>
     <button class="krantGate" id="gateKrantBtn"><span class="kgIcon" aria-hidden="true">BONK!</span><span class="kgText"><b>Ik heb de krant</b><small>Tegenpartij? Tik hier op je eigen telefoon</small></span></button>
     <p class="note err" id="gateKrantNote" hidden></p>
@@ -277,6 +278,18 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
       <button class="installX" id="installClose" aria-label="Verbergen">✕</button>
     </div>
     <p class="ver" data-ver></p>
+  </div>
+</section>
+
+<!-- Winnaar -->
+<section class="overlay" id="winOv" data-team="A" hidden>
+  <div class="gateInner" style="text-align:center">
+    <p class="brand">BONK<span>!</span></p>
+    <p class="gTitle">Winnaar</p>
+    <h1 class="gTeam" id="winTeam">Team A</h1>
+    <p class="gResult" id="winText"></p>
+    <button class="bigBtn" id="newGameBtn">Nieuw spel</button>
+    <button class="ghost" id="winMenuBtn">Menu</button>
   </div>
 </section>
 
@@ -317,7 +330,7 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
     <div class="sec">
       <h3>Een beurt</h3>
       <ol class="rules">
-        <li><span>Maak twee teams, <b>A</b> en <b>B</b>. Spreek af tot hoeveel punten je speelt.</span></li>
+        <li><span>Maak twee teams, <b>A</b> en <b>B</b>. Kies in het menu tot hoeveel punten je speelt (standaard 30).</span></li>
         <li><span>Het team aan de beurt kiest een omschrijver. Die pakt de telefoon. Iemand van de tegenpartij pakt de krant en mag meekijken.</span></li>
         <li><span>Tik op <b>Start</b>. Kies het makkelijke of het moeilijke woord.</span></li>
         <li><span>Omschrijf het met alleen woorden van één lettergreep. Voor <i>fiets</i>: “twee wiel, trap, bel”.</span></li>
@@ -342,6 +355,13 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
 <div class="sheetWrap" id="menu" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="menuTitle">
     <div class="sheetHead"><h2 id="menuTitle">Menu</h2><button class="close" id="closeMenu" aria-label="Sluiten">✕</button></div>
+
+    <div class="sec">
+      <h3>Spelen tot</h3>
+      <div class="seg seg4" id="targetSeg">
+        <button data-t="15">15</button><button data-t="30">30</button><button data-t="50">50</button><button data-t="0">Geen</button>
+      </div>
+    </div>
 
     <div class="sec">
       <h3>Tijd per beurt</h3>
@@ -427,7 +447,7 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
 
 <script>
 (function(){
-const VERSION = "v5 · 23 okt 19:50";
+const VERSION = "v6 · 23 okt 20:00";
 document.querySelectorAll("[data-ver]").forEach(el => el.textContent = "BONK " + VERSION);
 
 const DEFAULT_CARDS = [
@@ -444,8 +464,8 @@ const DEFAULT_CARDS = [
 ].map(([easy,hard])=>({easy,hard}));
 
 const KEY = "woordspel-v1";
-const base = (Array.isArray(window.CARDS) && window.CARDS.length) ? window.CARDS : DEFAULT_CARDS;
-const S = { cards:[], idx:0, team:"A", score:{A:0,B:0}, dur:90, turnPts:0, log:[], custom:null };
+let base = (Array.isArray(window.CARDS) && window.CARDS.length) ? window.CARDS : DEFAULT_CARDS;
+const S = { cards:[], idx:0, team:"A", score:{A:0,B:0}, dur:90, turnPts:0, log:[], custom:null, target:30, deckVer:0 };
 
 try { const d = JSON.parse(localStorage.getItem(KEY) || "null"); if (d && typeof d === "object") Object.assign(S, d); } catch(e){}
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} };
@@ -454,6 +474,7 @@ function shuffled(arr){ const a = arr.map(c=>({easy:c.easy, hard:c.hard})); for(
 if (!Array.isArray(S.cards) || !S.cards.length) { S.cards = shuffled(source()); S.idx = 0; }
 if (S.idx >= S.cards.length) S.idx = 0;
 if (![60,90,120].includes(S.dur)) S.dur = 90;
+if (![0,15,30,50].includes(S.target)) S.target = 30;
 
 let running=false, paused=false, remainingMs=S.dur*1000, endAt=0, timerId=null, lastSec=null;
 const $ = id => document.getElementById(id);
@@ -514,6 +535,7 @@ function showGate(title, result){
   $("gTitle").textContent = title;
   $("gTeam").textContent = `Team ${S.team}`;
   $("gsA").textContent = S.score.A; $("gsB").textContent = S.score.B;
+  $("gsTarget").textContent = S.target ? `· tot ${S.target}` : "";
   $("startBtn").textContent = `Start ${S.dur} seconden`;
   const r = $("gResult");
   if (result) { r.innerHTML = result; r.hidden = false; } else r.hidden = true;
@@ -564,6 +586,10 @@ function award(d){
   S.score[S.team] += applied; S.turnPts += applied;
   S.log.unshift({team:S.team, d:applied, word: d===3 ? c.hard : d===1 ? c.easy : `${c.easy} / ${c.hard}`});
   if (S.log.length > 200) S.log.length = 200;
+  if (S.target && S.score[S.team] >= S.target) {
+    confetti(d === 3 ? $("hardBtn") : $("easyBtn"), "var(--b)");
+    winGame(S.team); return;
+  }
   if (d < 0) bonkFx();
   else { toast(fmt(d), "pos"); beep(660, 0.1, 0.08); setTimeout(()=>beep(990, 0.12, 0.08), 90);
     confetti(d === 3 ? $("hardBtn") : $("easyBtn"), d === 3 ? "var(--b)" : "var(--good)"); }
@@ -574,6 +600,18 @@ function award(d){
     return;
   }
   render(); nextCard();
+}
+function winGame(team){
+  stopAll(); save(); render();
+  beep(523, .15, .1); setTimeout(()=>beep(659, .15, .1), 150); setTimeout(()=>beep(784, .35, .12), 300);
+  const o = other(team);
+  setTimeout(() => {
+    $("winOv").dataset.team = team;
+    $("winTeam").textContent = `Team ${team}`;
+    $("winText").innerHTML = `wint met <b>${S.score[team]}</b> tegen <b>${S.score[o]}</b>`;
+    $("winOv").hidden = false;
+    for (let i = 0; i < 3; i++) setTimeout(() => confetti($("winTeam"), i % 2 ? "var(--a)" : "var(--b)"), i * 250);
+  }, 500);
 }
 function pause(){
   if (!running || paused) return;
@@ -607,6 +645,7 @@ function renderLog(){
   }
 }
 function renderDur(){
+  document.querySelectorAll("#targetSeg button").forEach(b=>b.setAttribute("aria-pressed", String(+b.dataset.t === S.target)));
   document.querySelectorAll("#durSeg button").forEach(b=>{
     b.setAttribute("aria-pressed", String(+b.dataset.dur === S.dur)); b.disabled = running;
   });
@@ -646,6 +685,13 @@ $("rulesOkBtn").onclick = closeRules;
 $("rules").addEventListener("click", e=>{ if (e.target === $("rules")) closeRules(); });
 $("menu").addEventListener("click", e=>{ if (e.target === $("menu")) closeMenu(); });
 
+$("targetSeg").addEventListener("click", e=>{
+  const b = e.target.closest("button"); if (!b) return;
+  S.target = +b.dataset.t; save(); renderDur();
+  $("gsTarget").textContent = S.target ? `· tot ${S.target}` : "";
+});
+$("newGameBtn").onclick = ()=>{ $("winOv").hidden = true; S.cards = shuffled(source()); S.idx = 0; resetScores(); };
+$("winMenuBtn").onclick = ()=>{ openMenu(); };
 $("durSeg").addEventListener("click", e=>{
   const b = e.target.closest("button"); if (!b || running) return;
   S.dur = +b.dataset.dur; remainingMs = S.dur*1000; save(); renderDur(); renderTimer();
@@ -963,6 +1009,19 @@ $("installBtn").onclick = async () => {
 };
 $("installClose").onclick = () => { $("installBar").hidden = true; try { localStorage.setItem("bonk-install-hidden", "1"); } catch(e){} };
 setupInstallBar();
+
+/* ---------- kaarten uit words.json ---------- */
+fetch("words.json", { cache: "no-cache" })
+  .then(r => r.ok ? r.json() : Promise.reject())
+  .then(j => {
+    const list = (j.cards || []).filter(c => Array.isArray(c) && c[0] && c[1]).map(c => ({ easy:String(c[0]).trim(), hard:String(c[1]).trim() }));
+    if (list.length < 10) return;
+    base = list;
+    if (!S.custom && S.deckVer !== j.version && !running) {
+      S.cards = shuffled(base); S.idx = 0; S.deckVer = j.version; save(); render();
+    }
+  })
+  .catch(() => {});
 
 render();
 showGate(S.log.length ? "Verder spelen" : "Klaar om te spelen?");

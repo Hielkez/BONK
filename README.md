@@ -15,3 +15,5 @@ De telefoons verbinden direct met elkaar via WebRTC. [PeerJS](https://peerjs.com
 ## Eigen kaarten
 
 Menu → Kaarten bewerken. Eén kaart per regel: `makkelijk / moeilijk`.
+
+De standaardkaarten staan in [`words.json`](words.json). Pas die aan (en verhoog `version`), dan krijgt iedereen de nieuwe kaarten.
