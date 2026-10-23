@@ -252,6 +252,7 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
 .tname{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sd{min-width:0}
 .tnInput{min-width:0;width:100%;border:0;border-bottom:2px dashed var(--line);background:none;padding:2px 0;font:700 15px var(--body);color:var(--muted);text-overflow:ellipsis}
+.tnInput[readonly]{border-bottom-color:transparent;cursor:default}
 .tnInput:focus{outline:none;border-bottom-color:var(--fg);color:var(--fg)}
 #gate:not(.home) .tnInput{border-bottom-color:transparent}
 #gate[data-team="A"] .sd.a .tnInput{color:var(--a)} #gate[data-team="B"] .sd.b .tnInput{color:var(--b)}
@@ -409,7 +410,7 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
       <div class="sdMid" id="gsTarget"></div>
       <label class="sd b"><input class="tnInput" id="nameB" maxlength="16" placeholder="Team B" autocomplete="off" spellcheck="false" aria-label="Naam team B"><b id="gsB">0</b></label>
     </div>
-    <p class="namesHint homeOnly">Tik op een teamnaam om hem te veranderen</p>
+    <p class="namesHint homeOnly" id="namesHint">Tik op een teamnaam om hem te veranderen</p>
     <div class="setup homeOnly hostOnly">
       <div class="setRow"><span>Spelen tot</span>
         <div class="seg seg4 tSeg"><button data-t="15">15</button><button data-t="30">30</button><button data-t="50">50</button><button data-t="0">Geen</button></div>
@@ -649,7 +650,7 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 
 <script>
 (function(){
-const VERSION = "v15 · 23 okt 22:00";
+const VERSION = "v17 · 23 okt 21:35";
 document.querySelectorAll("[data-ver]").forEach(el => el.textContent = "BONK " + VERSION);
 
 const DEFAULT_CARDS = [
@@ -784,9 +785,11 @@ function beginTurn(remote){
   if (running || counting || winTeam) return;
   if (remote !== true) { if (!canStartHere()) return; audioOn(); goFullscreen(); }
   counting = true; gateInfo = null; $("gate").hidden = true;
-  fx("count");
+  // beide telefoons tellen af naar hetzelfde tijdstip op de klok van de server
+  const at = serverNow() + COUNT_MS + (linked() ? 500 : 0);
+  fx("count", { at });
   hostPresence();
-  setTimeout(() => { counting = false; startTurn(); }, COUNT_MS);
+  setTimeout(() => { counting = false; startTurn(); }, Math.max(0, at - serverNow()));
 }
 function startTurn(){
   audioOn();
@@ -811,15 +814,15 @@ function endTurn(manual){
   fx("timeup");
   setTimeout(go, 1100);
 }
-function nextCard(anim){ lastAnim = anim || "skip"; cardSeq++; S.idx = (S.idx + 1) % S.cards.length; renderWords(lastAnim); save(); hostPresence(); }
+function nextCard(anim){ lastAnim = anim || "skip"; cardSeq++; S.idx = (S.idx + 1) % S.cards.length; renderWords(lastAnim); save(); hostPresence(); updateRoleView(); }
 function skipCard(){
-  if (role === "guest") { if (running && !paused && !bonkLock && pendingTap !== mirror.seq) { pendingTap = mirror.seq; setTimeout(() => { pendingTap = null; }, 1500); sendCmd({ c:"skip", seq:mirror.seq }); } return; }
+  if (role === "guest") { if ((running || Math.abs(serverNow() - countEndS) < 2500) && !paused && !bonkLock && pendingTap !== mirror.seq) { pendingTap = mirror.seq; setTimeout(() => { pendingTap = null; }, 1500); sendCmd({ c:"skip", seq:mirror.seq }); } return; }
   if (running && !paused && !bonkLock && !busy) nextCard("skip");
 }
 /* Na een BONK even niets meer: geen tweede BONK, geen punten, pas daarna een nieuw woord */
 var cardSeq = 0, bonkLock = false, lockTok = 0, busy = false;
 const BONK_PAUSE = 1400;
-function setLockUi(on){ $("stage").classList.toggle("locked", on); document.querySelector(".actions").classList.toggle("locked", on); }
+function setLockUi(on){ $("stage").classList.toggle("locked", on); document.querySelector(".actions").classList.toggle("locked", on); updateRoleView(); }
 function unlockBonk(){ lockTok++; bonkLock = false; busy = false; setLockUi(false); }
 function award(d){
   if (role === "guest" || !running || paused || bonkLock || busy) return;
@@ -858,13 +861,13 @@ function pause(){
   if (role === "guest") { if (running && !paused) sendCmd({ c:"pause" }); return; }
   if (!running || paused) return;
   paused = true; remainingMs = Math.max(0, endAt - performance.now());
-  clearInterval(timerId); timerId = null; $("pauseOv").hidden = false; hostPresence();
+  clearInterval(timerId); timerId = null; $("pauseOv").hidden = false; hostPresence(); updateRoleView();
 }
 function resume(){
   if (role === "guest") { sendCmd({ c:"resume" }); return; }
   if (!running || !paused) return;
   paused = false; endAt = performance.now() + remainingMs;
-  timerId = setInterval(tick, 200); $("pauseOv").hidden = true; hostPresence();
+  timerId = setInterval(tick, 200); $("pauseOv").hidden = true; hostPresence(); updateRoleView();
 }
 function stopAll(){
   unlockBonk(); clearInterval(timerId); timerId = null; $("hurry").classList.remove("on"); running = false; paused = false;
@@ -936,6 +939,7 @@ document.addEventListener("click", e=>{
 });
 for (const t of ["A","B"]) {
   $("name"+t).addEventListener("input", e => {
+    if (!canEditName(t)) return;
     S.names[t] = e.target.value.slice(0, 16); save();
     if (role === "guest") sendCmd({ c:"name", team:t, v:S.names[t] });
     $("tnA").textContent = tn("A"); $("tnB").textContent = tn("B"); $("turnLabel").textContent = tn(S.team);
@@ -1087,7 +1091,7 @@ function playFx(m){
   } else if (m.k === "bonk") {
     bonkFx($("krantOv").hidden ? null : $("krantInner"));
   } else if (m.k === "count") {
-    runCountdown();
+    runCountdown(Number(m.at) || 0);
   } else if (m.k === "timeup") {
     beep(220, 0.7, 0.18); try { navigator.vibrate && navigator.vibrate([300,120,300]); } catch(e){}
     $("hurry").classList.remove("on");
@@ -1105,18 +1109,27 @@ function fillWin(team){
   $("winText").innerHTML = `wint met <b>${S.score[team]}</b> tegen <b>${S.score[other(team)]}</b>`;
   $("newGameBtn").disabled = role === "guest" && !guestOnline();
 }
-function runCountdown(){
+var countEndS = 0;
+function runCountdown(at){
+  if (!at) at = serverNow() + COUNT_MS;
+  countEndS = at;
+  const begin = at - COUNT_MS;
   $("gate").hidden = true; $("winOv").hidden = true;
   const steps = ["3", "2", "1", "GO!"], num = $("countNum");
   $("countSub").textContent = describingHere() ? `${tn(S.team)}: omschrijver pakt de telefoon` : `${tn(S.team)} is aan de beurt. Pak de krant!`;
   $("countOv").hidden = false;
-  steps.forEach((txt, i) => setTimeout(() => {
-    num.textContent = txt; num.className = txt === "GO!" ? "go" : "";
-    void num.offsetWidth; num.classList.add("pop");
-    beep(txt === "GO!" ? 880 : 520, txt === "GO!" ? .25 : .1, .1);
-    try { navigator.vibrate && navigator.vibrate(txt === "GO!" ? 60 : 20); } catch(e){}
-  }, i * 650));
-  setTimeout(() => { $("countOv").hidden = true; }, COUNT_MS);
+  num.textContent = ""; num.className = "";
+  steps.forEach((txt, i) => {
+    const delay = begin + i * 650 - serverNow();
+    if (delay < -600) return;            // te laat binnengekomen: deze stap is al voorbij
+    setTimeout(() => {
+      num.textContent = txt; num.className = txt === "GO!" ? "go" : "";
+      void num.offsetWidth; num.classList.add("pop");
+      beep(txt === "GO!" ? 880 : 520, txt === "GO!" ? .25 : .1, .1);
+      try { navigator.vibrate && navigator.vibrate(txt === "GO!" ? 60 : 20); } catch(e){}
+    }, Math.max(0, delay));
+  });
+  setTimeout(() => { $("countOv").hidden = true; }, Math.max(0, at - serverNow()));
 }
 
 /* --- wat deze telefoon nu laat zien: kaarten of krant --- */
@@ -1147,7 +1160,14 @@ function setKrantStatus(text, enabled){ $("kStatus").textContent = text; $("bonk
   }
   requestAnimationFrame(kTick);
 })();
+// met twee telefoons past elk team alleen zijn eigen naam aan
+function canEditName(t){ return role === "guest" ? t === myTeam : (!linked() || t === myTeam); }
+function updateNameLocks(){
+  for (const t of ["A","B"]) { const inp = $("name"+t), ok = canEditName(t); inp.readOnly = !ok; inp.tabIndex = ok ? 0 : -1; }
+  $("namesHint").textContent = (role === "guest" || linked()) ? "Tik op je eigen teamnaam om hem te veranderen" : "Tik op een teamnaam om hem te veranderen";
+}
 function updateDuo(){
+  updateNameLocks();
   if (role === "guest") {
     $("guestTitle").textContent = gWelcomed ? `Deze telefoon: ${tn(myTeam)}` : `Verbinden met spel ${gCode}…`;
     $("guestStatus").textContent = gFailed ? gFailed
@@ -1173,6 +1193,7 @@ function stateMsg(){
   const c = S.cards[S.idx];
   return { v:VERSION, team:S.team, running, paused, counting, guestTeam:other(myTeam),
     ms: Math.round(running && !paused ? Math.max(0, endAt - performance.now()) : remainingMs),
+    endS: running && !paused ? Math.round(serverNow() + (endAt - performance.now())) : null,
     dur:S.dur, seq:cardSeq, lock:bonkLock, anim:lastAnim, card:{ easy:c.easy, hard:c.hard }, idx:S.idx, total:S.cards.length,
     score:{ A:S.score.A, B:S.score.B }, names:{ A:S.names.A || "", B:S.names.B || "" }, target:S.target,
     gate: gateInfo ? { title:gateInfo.title, result:gateInfo.result || "" } : null, win: winTeam || null };
@@ -1186,6 +1207,7 @@ function sendFx(m){
   if (role !== "host" || !hostCode || !fdb) return;
   const out = { k:m.k, id:Date.now() + Math.random() };
   if (m.d !== undefined) out.d = m.d;
+  if (m.at !== undefined) out.at = m.at;
   if (m.team !== undefined) out.team = m.team;
   hostPresence();
   // net na de stand, zodat de andere telefoon al de juiste score en het juiste woord heeft
@@ -1216,7 +1238,7 @@ function handleCmd(d){
     case "pause":  if (S.team === gt) pause(); break;
     case "resume": resume(); break;
     case "stop":   if (running) endTurn(true); break;
-    case "name":   if (d.team === "A" || d.team === "B") { S.names[d.team] = String(d.v || "").slice(0, 16); save(); render(); if (!$("gate").hidden && gateInfo) showGate(gateInfo.title, gateInfo.result); } break;
+    case "name":   if (d.team === other(myTeam)) { S.names[d.team] = String(d.v || "").slice(0, 16); save(); render(); if (!$("gate").hidden && gateInfo) showGate(gateInfo.title, gateInfo.result); } break;
     case "newgame": if (winTeam) newGame(); break;
   }
 }
@@ -1351,7 +1373,9 @@ function applyState(d){
   const seq = num(d.seq, 0), cardChanged = seq !== mirror.seq, wasRunning = running;
   mirror = { card: { easy: String((d.card && d.card.easy) || "—"), hard: String((d.card && d.card.hard) || "—") }, idx: num(d.idx, 0), total: num(d.total, 0), seq, v: d.v };
   running = !!d.running; paused = !!d.paused; counting = !!d.counting; bonkLock = !!d.lock;
-  remainingMs = num(d.ms, S.dur * 1000); endAt = performance.now() + remainingMs;
+  // eindtijd volgens de serverklok, zodat beide telefoons op hetzelfde moment op 0 staan
+  remainingMs = (running && !paused && Number.isFinite(Number(d.endS))) ? Math.max(0, Number(d.endS) - serverNow()) : num(d.ms, S.dur * 1000);
+  endAt = performance.now() + remainingMs;
   if (running && !timerId) timerId = setInterval(tick, 200);
   if (!running && timerId) { clearInterval(timerId); timerId = null; }
   if (running) wakeOn(); else wakeOff();
@@ -1371,7 +1395,9 @@ function applyState(d){
 function sendBonk(id){ sendIn({ t:"bonk", id, seq:mirror.seq }); }
 function tapScore(d){
   if (role !== "guest") return award(d);
-  if (!running || paused || bonkLock || pendingTap === mirror.seq) return;
+  // net na GO! weet deze telefoon soms nog niet dat de beurt loopt; de spel-telefoon controleert het toch
+  const justStarted = Math.abs(serverNow() - countEndS) < 2500;
+  if ((!running && !justStarted) || paused || bonkLock || pendingTap === mirror.seq) return;
   pendingTap = mirror.seq; setTimeout(() => { pendingTap = null; }, 1500);
   sendCmd({ c:"award", d, seq:mirror.seq });
 }
@@ -1384,7 +1410,8 @@ function leaveGame(){
 /* elke paar seconden de status bijwerken (bijv. als de andere telefoon wegvalt) */
 setInterval(() => {
   if (role === "guest" && gCode) { updateDuo(); updateRoleView(); if (!$("gate").hidden) $("startBtn").disabled = !canStartHere(); }
-}, 2000);
+  else if (role === "host") updateRoleView();   // vangnet: krant-scherm altijd bij de actuele stand
+}, 1000);
 
 $("krantBtn").onclick = openJoin;
 $("joinCancel").onclick = () => { $("joinOv").hidden = true; };
