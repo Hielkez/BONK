@@ -207,6 +207,9 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
 .installBtn{flex:none;padding:8px 14px;border-radius:999px;background:var(--fg);color:var(--ink);font-weight:700;font-size:14px}
 .installX{flex:none;width:32px;height:32px;border-radius:50%;color:var(--muted)}
 .ver{margin:0;text-align:center;font-size:12px;color:var(--muted);opacity:.7;font-variant-numeric:tabular-nums}
+.stage.locked{pointer-events:none}
+.stage.locked .word{opacity:.35;filter:grayscale(1);transition:opacity .2s}
+.actions.locked{opacity:.45;pointer-events:none}
 </style>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -424,7 +427,7 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
 
 <script>
 (function(){
-const VERSION = "v4 · 23 okt 19:45";
+const VERSION = "v5 · 23 okt 19:50";
 document.querySelectorAll("[data-ver]").forEach(el => el.textContent = "BONK " + VERSION);
 
 const DEFAULT_CARDS = [
@@ -537,7 +540,7 @@ function startTurn(){
   save(); render(); wakeOn();
 }
 function endTurn(manual){
-  clearInterval(timerId); timerId = null;
+  clearInterval(timerId); timerId = null; unlockBonk();
   running = false; paused = false; $("pauseOv").hidden = true;
   if (!manual) { beep(220, 0.7, 0.18); try { navigator.vibrate && navigator.vibrate([300,120,300]); } catch(e){} }
   const prev = S.team, pts = S.turnPts;
@@ -548,9 +551,14 @@ function endTurn(manual){
   showGate(manual ? "Beurt gestopt · volgende" : "Tijd is op! · volgende",
     `Team ${prev} haalde <b>${fmt(pts)}</b> ${Math.abs(pts)===1?"punt":"punten"} deze beurt.`);
 }
-function nextCard(){ S.idx = (S.idx + 1) % S.cards.length; renderWords(); save(); }
+function nextCard(){ cardSeq++; S.idx = (S.idx + 1) % S.cards.length; renderWords(); save(); hostPresence(); }
+/* Na een BONK even niets meer: geen tweede BONK, geen punten, pas daarna een nieuw woord */
+var cardSeq = 0, bonkLock = false, lockTok = 0;
+const BONK_PAUSE = 1400;
+function setLockUi(on){ $("stage").classList.toggle("locked", on); document.querySelector(".actions").classList.toggle("locked", on); }
+function unlockBonk(){ lockTok++; bonkLock = false; setLockUi(false); }
 function award(d){
-  if (!running || paused) return;
+  if (!running || paused || bonkLock) return;
   const c = S.cards[S.idx];
   const applied = Math.max(d, -S.score[S.team]);   // nooit onder 0
   S.score[S.team] += applied; S.turnPts += applied;
@@ -559,6 +567,12 @@ function award(d){
   if (d < 0) bonkFx();
   else { toast(fmt(d), "pos"); beep(660, 0.1, 0.08); setTimeout(()=>beep(990, 0.12, 0.08), 90);
     confetti(d === 3 ? $("hardBtn") : $("easyBtn"), d === 3 ? "var(--b)" : "var(--good)"); }
+  if (d < 0) {
+    bonkLock = true; setLockUi(true); render();
+    const tok = ++lockTok;
+    setTimeout(() => { if (tok !== lockTok) return; bonkLock = false; setLockUi(false); if (running) nextCard(); else hostPresence(); }, BONK_PAUSE);
+    return;
+  }
   render(); nextCard();
 }
 function pause(){
@@ -572,7 +586,7 @@ function resume(){
   timerId = setInterval(tick, 200); $("pauseOv").hidden = true; hostPresence();
 }
 function stopAll(){
-  clearInterval(timerId); timerId = null; running = false; paused = false;
+  unlockBonk(); clearInterval(timerId); timerId = null; running = false; paused = false;
   $("pauseOv").hidden = true; remainingMs = S.dur*1000; wakeOff();
 }
 
@@ -616,7 +630,7 @@ $("startBtn").onclick = () => { goFullscreen(); startTurn(); };
 $("easyBtn").onclick = ()=>award(1);
 $("hardBtn").onclick = ()=>award(3);
 $("minusBtn").onclick = ()=>award(-1);
-$("skipBtn").onclick = ()=>{ if (running && !paused) nextCard(); };
+$("skipBtn").onclick = ()=>{ if (running && !paused && !bonkLock) nextCard(); };
 $("pauseBtn").onclick = pause;
 $("resumeBtn").onclick = resume;
 $("stopBtn").onclick = ()=>endTurn(true);
@@ -666,7 +680,7 @@ window.addEventListener("keydown", e=>{
   if (!$("gate").hidden) { if (e.key === "Enter") startTurn(); return; }
   if (e.key === "p" || e.key === "P") { paused ? resume() : pause(); }
   if (paused || !$("menu").hidden) return;
-  if (e.code === "Space") { e.preventDefault(); if (running) nextCard(); }
+  if (e.code === "Space") { e.preventDefault(); if (running && !paused && !bonkLock) nextCard(); }
   if (e.key === "1") award(-1);
   if (e.key === "2") award(1);
   if (e.key === "3") award(3);
@@ -722,7 +736,7 @@ try { CID = sessionStorage.getItem("bonk-cid"); } catch(e){}
 if (!CID) { CID = Math.random().toString(36).slice(2, 10); try { sessionStorage.setItem("bonk-cid", CID); } catch(e){} }
 
 /* spel-telefoon */
-function hostState(){ return { t:"state", team:S.team, running, paused, secs:Math.ceil(remainingMs/1000) }; }
+function hostState(){ return { t:"state", team:S.team, running, paused, secs:Math.ceil(remainingMs/1000), seq:cardSeq, lock:bonkLock }; }
 function hostPresence(){
   if (role !== "host") return;
   const m = hostState();
@@ -775,6 +789,8 @@ function startHost(tries){
         const key = info.cid || "?", id = Number(d.id) || 0;
         if (id <= (lastBonkId.get(key) || 0)) return;   // al verwerkt (opnieuw verstuurd)
         lastBonkId.set(key, id);
+        // alleen een BONK op het woord dat nu in beeld is; een tweede BONK op hetzelfde woord telt niet
+        if (d.seq !== undefined && Number(d.seq) !== cardSeq) return;
         if (role === "host" && running && !paused) award(-1);
       }
     });
@@ -838,6 +854,8 @@ function connectKrant(code){
       krantLast = Date.now();
       if (d.t === "ack") { const t = pendingBonks.get(d.id); if (t) { clearTimeout(t); pendingBonks.delete(d.id); } return; }
       if (d.t !== "state") return;
+      if (typeof d.seq === "number") krantSeq = d.seq;
+      if (d.running && d.lock) { setKrantStatus("BONK! Volgend woord komt eraan…", false); return; }
       const team = d.team === "B" ? "B" : "A";
       if (d.running && !d.paused) setKrantStatus(`Team ${team} omschrijft · ${Number(d.secs) || 0} s`, true);
       else setKrantStatus(d.running ? "Pauze" : `Wachten tot Team ${team} start`, false);
@@ -850,12 +868,16 @@ function connectKrant(code){
     c.on("error", () => {});
   });
 }
+var krantSeq;
+const bonkSeqs = new Map();   // BONK-id -> woord waarop getikt werd
 function sendBonk(id){
-  if (krantConn && krantConn.open) { try { krantConn.send({ t:"bonk", id, cid:CID }); } catch(e){} }
+  if (!bonkSeqs.has(id)) bonkSeqs.set(id, krantSeq);
+  const seq = bonkSeqs.get(id);
+  if (krantConn && krantConn.open) { try { krantConn.send({ t:"bonk", id, seq, cid:CID }); } catch(e){} }
   // opnieuw versturen tot de spel-telefoon het bevestigt; na 8 s is hij te oud
   pendingBonks.set(id, setTimeout(() => {
     if (!pendingBonks.has(id)) return;
-    if (Date.now() - id < 8000) sendBonk(id); else pendingBonks.delete(id);
+    if (Date.now() - id < 8000) sendBonk(id); else { pendingBonks.delete(id); bonkSeqs.delete(id); }
   }, 1200));
 }
 function enterKrant(code){
