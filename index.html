@@ -76,9 +76,23 @@ button:focus-visible{outline:3px solid var(--b);outline-offset:2px}
 .w{flex:1;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:clamp(30px, 10vw, 50px);line-height:1.05;overflow-wrap:anywhere;hyphens:auto;min-height:0}
 .w.long{font-size:clamp(24px, 7.6vw, 38px)}
 .tapHint{font-size:12px;color:var(--ink-soft)}
-.deal .word{animation:deal .22s ease-out}
-.deal .word.hard{animation-delay:.04s}
-@keyframes deal{from{transform:translateY(8px);opacity:.3}}
+/* kaart-overgangen */
+.in-deal .word{animation:inDeal .4s cubic-bezier(.2,.9,.3,1.15) both}
+.in-ok .word{animation:inFlip .42s cubic-bezier(.2,.8,.3,1.1) both}
+.in-skip .word{animation:inSlide .32s cubic-bezier(.2,.8,.3,1) both}
+.in-bonk .word{animation:inDrop .4s cubic-bezier(.2,.9,.3,1.2) both}
+.in-deal .word.hard,.in-ok .word.hard,.in-skip .word.hard,.in-bonk .word.hard{animation-delay:.06s}
+@keyframes inDeal{from{transform:translateY(28px) scale(.95);opacity:0}}
+@keyframes inFlip{from{transform:perspective(800px) rotateX(-80deg);opacity:0}}
+@keyframes inSlide{from{transform:translateX(70%) rotate(5deg);opacity:0}}
+@keyframes inDrop{from{transform:translateY(-36px) scale(1.04);opacity:0}}
+.word{position:relative;overflow:hidden}
+.word::after{content:"";position:absolute;inset:0;border-radius:inherit;background:var(--good);opacity:0;pointer-events:none}
+.word.hit{animation:hit .28s ease-in forwards}
+.word.hit::after{animation:hitFlash .28s ease-out forwards}
+.stage.hitting .word:not(.hit){opacity:.45;transition:opacity .15s}
+@keyframes hit{35%{transform:scale(1.035)}100%{transform:translateY(-10px) scale(.96);opacity:0}}
+@keyframes hitFlash{0%{opacity:0}30%{opacity:.55}100%{opacity:.2}}
 
 /* Actions */
 .actions{display:grid;grid-template-columns:1fr 1.3fr 1fr;gap:10px}
@@ -250,6 +264,46 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
 .toast.small{font-size:40px}
 .team.bump{animation:bump .4s cubic-bezier(.2,1.6,.4,1)}
 @keyframes bump{40%{transform:scale(1.12)}}
+/* scores die omhoog rollen */
+.tscore.roll,.sd b.roll{display:inline-block;animation:roll .35s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes roll{from{transform:translateY(55%);opacity:0}}
+/* laatste seconden: rode gloed aan de rand */
+.hurry{position:fixed;inset:0;z-index:15;pointer-events:none;box-shadow:inset 0 0 0 0 rgba(240,98,95,0);opacity:0;transition:opacity .3s}
+.hurry.on{opacity:1;animation:hurry 1s ease-in-out infinite}
+@keyframes hurry{50%{box-shadow:inset 0 0 70px 6px rgba(240,98,95,.55)}}
+/* 3-2-1 */
+.countOv{position:fixed;inset:0;z-index:22;display:grid;place-items:center;background:var(--bg-deep)}
+.countOv span{font-family:var(--display);font-weight:800;font-size:min(48vw,200px);line-height:1;color:var(--fg);text-shadow:0 8px 0 var(--ink)}
+.countOv span.go{color:var(--good);font-size:min(30vw,130px)}
+.countOv span.pop{animation:countPop .6s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes countPop{0%{transform:scale(1.8);opacity:0}25%{opacity:1}70%{transform:scale(1)}100%{transform:scale(.9);opacity:.15}}
+.countSub{position:absolute;bottom:max(18%, env(safe-area-inset-bottom, 0px));left:0;right:0;text-align:center;font-weight:700;color:var(--muted);font-size:15px;padding:0 16px}
+/* tijd op */
+.stamp{position:fixed;inset:0;z-index:23;display:grid;place-items:center;pointer-events:none;background:rgba(11,34,42,.6)}
+.stamp span{font-family:var(--display);font-weight:800;font-size:min(30vw,140px);color:var(--bad);border:10px solid var(--bad);border-radius:24px;padding:0 24px;transform:rotate(-8deg);animation:slam .5s cubic-bezier(.3,1.6,.5,1) both;background:var(--bg-deep)}
+@keyframes slam{0%{transform:rotate(-8deg) scale(2.4);opacity:0}60%{opacity:1}100%{transform:rotate(-8deg) scale(1)}}
+/* binnenkomst schermen */
+#gate:not([hidden]) .gateInner > *{animation:rise .45s cubic-bezier(.2,.8,.3,1) both}
+#gate:not([hidden]) .gateInner > :nth-child(2){animation-delay:.04s}
+#gate:not([hidden]) .gateInner > :nth-child(3){animation-delay:.08s}
+#gate:not([hidden]) .gateInner > :nth-child(4){animation-delay:.12s}
+#gate:not([hidden]) .gateInner > :nth-child(5){animation-delay:.16s}
+#gate:not([hidden]) .gateInner > :nth-child(6){animation-delay:.2s}
+#gate:not([hidden]) .gateInner > :nth-child(7){animation-delay:.24s}
+#gate:not([hidden]) .gateInner > :nth-child(n+8){animation-delay:.28s}
+@keyframes rise{from{transform:translateY(16px);opacity:0}}
+#gate:not(.home):not([hidden]) .gTeam{animation:popIn .55s .08s cubic-bezier(.2,1.6,.4,1) both}
+.sheetWrap:not([hidden]){animation:fadeIn .2s ease-out}
+.sheetWrap:not([hidden]) .sheet{animation:sheetUp .32s cubic-bezier(.2,.9,.3,1)}
+@keyframes sheetUp{from{transform:translateY(100%)}}
+@keyframes fadeIn{from{opacity:0}}
+#pauseOv:not([hidden]),#winOv:not([hidden]),#joinOv:not([hidden]),#krantOv:not([hidden]){animation:fadeIn .25s ease-out}
+.bigBtn,.act,.secBtn,.krantGate,.seg button,.ghost,.iconBtn,.menuBtn{transition:transform .12s, filter .12s, background-color .15s}
+.bigBtn:active,.secBtn:active,.krantGate:active,.iconBtn:active,.menuBtn:active{transform:scale(.97)}
+.seg button:active{transform:scale(.94)}
+/* confetti-regen bij winst */
+.rain{position:fixed;top:-20px;z-index:44;width:10px;height:16px;border-radius:2px;pointer-events:none;animation:rain var(--t) linear var(--d) forwards}
+@keyframes rain{to{transform:translate(var(--x), calc(100vh + 40px)) rotate(var(--r))}}
 </style>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -317,7 +371,7 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
         <div class="seg seg4 tSeg"><button data-t="15">15</button><button data-t="30">30</button><button data-t="50">50</button><button data-t="0">Geen</button></div>
       </div>
       <div class="setRow"><span>Tijd per beurt</span>
-        <div class="seg dSeg"><button data-dur="60">60 s</button><button data-dur="90">90 s</button><button data-dur="120">120 s</button></div>
+        <div class="seg seg4 dSeg"><button data-dur="30">30 s</button><button data-dur="60">60 s</button><button data-dur="90">90 s</button><button data-dur="120">120 s</button></div>
       </div>
     </div>
     <button class="bigBtn" id="startBtn">Start</button>
@@ -421,8 +475,8 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
 
     <div class="sec">
       <h3>Tijd per beurt</h3>
-      <div class="seg dSeg" id="durSeg">
-        <button data-dur="60">60 s</button><button data-dur="90">90 s</button><button data-dur="120">120 s</button>
+      <div class="seg seg4 dSeg" id="durSeg">
+        <button data-dur="30">30 s</button><button data-dur="60">60 s</button><button data-dur="90">90 s</button><button data-dur="120">120 s</button>
       </div>
       <p class="note" id="durNote" hidden>Je kunt de tijd aanpassen als er geen beurt loopt.</p>
     </div>
@@ -469,6 +523,9 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
 </div>
 
 <div class="toast" id="toast" aria-live="polite"></div>
+<div class="hurry" id="hurry" aria-hidden="true"></div>
+<div class="countOv" id="countOv" hidden><span id="countNum">3</span><p class="countSub" id="countSub"></p></div>
+<div class="stamp" id="stamp" hidden><span>TIJD!</span></div>
 
 <div class="bonkFx" id="bonkFx" aria-hidden="true">
   <div class="flash"></div>
@@ -505,7 +562,7 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
 
 <script>
 (function(){
-const VERSION = "v11 · 23 okt 20:25";
+const VERSION = "v12 · 23 okt 20:40";
 document.querySelectorAll("[data-ver]").forEach(el => el.textContent = "BONK " + VERSION);
 
 const DEFAULT_CARDS = [
@@ -531,7 +588,7 @@ const source = () => (S.custom && S.custom.length) ? S.custom : base;
 function shuffled(arr){ const a = arr.map(c=>({easy:c.easy, hard:c.hard})); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 if (!Array.isArray(S.cards) || !S.cards.length) { S.cards = shuffled(source()); S.idx = 0; }
 if (S.idx >= S.cards.length) S.idx = 0;
-if (![60,90,120].includes(S.dur)) S.dur = 90;
+if (![30,60,90,120].includes(S.dur)) S.dur = 90;
 if (![0,15,30,50].includes(S.target)) S.target = 30;
 if (!S.names || typeof S.names !== "object") S.names = {A:"", B:""};
 const tn = t => (S.names[t] || "").trim() || `Team ${t}`;
@@ -551,17 +608,25 @@ function renderTimer(){
   if (secs !== lastPresSecs) { lastPresSecs = secs; hostPresence(); }
   $("ring").style.strokeDashoffset = C * (1 - remainingMs/(S.dur*1000));
   $("timer").classList.toggle("low", running && secs <= 10);
+  $("hurry").classList.toggle("on", running && !paused && secs <= 5);
 }
-function renderWords(){
+function renderWords(anim){
   const c = S.cards[S.idx];
   for (const [id,txt] of [["easyText",c.easy],["hardText",c.hard]]) {
     const el = $(id); el.textContent = txt; el.classList.toggle("long", txt.length > 10);
   }
   $("counter").textContent = `kaart ${S.idx+1} / ${S.cards.length}`;
-  const st = $("stage"); st.classList.remove("deal"); void st.offsetWidth; st.classList.add("deal");
+  const st = $("stage");
+  st.classList.remove("hitting", "in-deal", "in-ok", "in-skip", "in-bonk");
+  $("easyBtn").classList.remove("hit"); $("hardBtn").classList.remove("hit");
+  if (anim) { void st.offsetWidth; st.classList.add("in-" + anim); }
+}
+function setScore(el, v){
+  if (el.textContent === String(v)) return;
+  el.textContent = v; el.classList.remove("roll"); void el.offsetWidth; el.classList.add("roll");
 }
 function render(){
-  $("scoreA").textContent = S.score.A; $("scoreB").textContent = S.score.B;
+  setScore($("scoreA"), S.score.A); setScore($("scoreB"), S.score.B);
   $("teamA").classList.toggle("active", S.team === "A");
   $("teamB").classList.toggle("active", S.team === "B");
   $("turnLabel").textContent = tn(S.team);
@@ -619,6 +684,22 @@ function tick(){
   renderTimer();
   if (remainingMs <= 0) endTurn(false);
 }
+var counting = false;
+function beginTurn(){
+  if (running || counting) return;
+  audioOn(); goFullscreen();
+  $("gate").hidden = true; counting = true;
+  const steps = ["3", "2", "1", "GO!"], num = $("countNum");
+  $("countSub").textContent = `${tn(S.team)}: omschrijver pakt de telefoon`;
+  $("countOv").hidden = false;
+  steps.forEach((txt, i) => setTimeout(() => {
+    num.textContent = txt; num.className = txt === "GO!" ? "go" : "";
+    void num.offsetWidth; num.classList.add("pop");
+    beep(txt === "GO!" ? 880 : 520, txt === "GO!" ? .25 : .1, .1);
+    try { navigator.vibrate && navigator.vibrate(txt === "GO!" ? 60 : 20); } catch(e){}
+  }, i * 650));
+  setTimeout(() => { $("countOv").hidden = true; counting = false; startTurn(); }, steps.length * 650 - 150);
+}
 function startTurn(){
   audioOn();
   $("gate").hidden = true;
@@ -626,7 +707,7 @@ function startTurn(){
   remainingMs = S.dur*1000; endAt = performance.now() + remainingMs; lastSec = null;
   clearInterval(timerId); timerId = setInterval(tick, 200);
   S.log.unshift({start:true, team:S.team});
-  save(); render(); wakeOn();
+  save(); render(); renderWords("deal"); wakeOn();
 }
 function endTurn(manual){
   clearInterval(timerId); timerId = null; unlockBonk();
@@ -634,20 +715,24 @@ function endTurn(manual){
   if (!manual) { beep(220, 0.7, 0.18); try { navigator.vibrate && navigator.vibrate([300,120,300]); } catch(e){} }
   const prev = S.team, pts = S.turnPts;
   S.team = other(prev);
-  S.idx = (S.idx + 1) % S.cards.length;
+  S.idx = (S.idx + 1) % S.cards.length; cardSeq++;
   remainingMs = S.dur*1000;
-  save(); render(); wakeOff();
-  showGate(manual ? "Beurt gestopt · volgende" : "Tijd is op! · volgende",
+  save(); render(); wakeOff(); $("hurry").classList.remove("on");
+  const go = () => showGate(manual ? "Beurt gestopt · volgende" : "Tijd is op! · volgende",
     `${esc(tn(prev))} haalde <b>${fmt(pts)}</b> ${Math.abs(pts)===1?"punt":"punten"} deze beurt.`);
+  if (manual) return go();
+  $("stamp").hidden = false;
+  setTimeout(() => { $("stamp").hidden = true; go(); }, 1100);
 }
-function nextCard(){ cardSeq++; S.idx = (S.idx + 1) % S.cards.length; renderWords(); save(); hostPresence(); }
+function nextCard(anim){ cardSeq++; S.idx = (S.idx + 1) % S.cards.length; renderWords(anim || "skip"); save(); hostPresence(); }
+function skipCard(){ if (running && !paused && !bonkLock && !busy) nextCard("skip"); }
 /* Na een BONK even niets meer: geen tweede BONK, geen punten, pas daarna een nieuw woord */
-var cardSeq = 0, bonkLock = false, lockTok = 0;
+var cardSeq = 0, bonkLock = false, lockTok = 0, busy = false;
 const BONK_PAUSE = 1400;
 function setLockUi(on){ $("stage").classList.toggle("locked", on); document.querySelector(".actions").classList.toggle("locked", on); }
-function unlockBonk(){ lockTok++; bonkLock = false; setLockUi(false); }
+function unlockBonk(){ lockTok++; bonkLock = false; busy = false; setLockUi(false); }
 function award(d){
-  if (!running || paused || bonkLock) return;
+  if (!running || paused || bonkLock || busy) return;
   const c = S.cards[S.idx];
   const applied = Math.max(d, -S.score[S.team]);   // nooit onder 0
   S.score[S.team] += applied; S.turnPts += applied;
@@ -668,10 +753,16 @@ function award(d){
   if (d < 0) {
     bonkLock = true; setLockUi(true); render();
     const tok = ++lockTok;
-    setTimeout(() => { if (tok !== lockTok) return; bonkLock = false; setLockUi(false); if (running) nextCard(); else hostPresence(); }, BONK_PAUSE);
+    setTimeout(() => { if (tok !== lockTok) return; bonkLock = false; setLockUi(false); if (running) nextCard("bonk"); else hostPresence(); }, BONK_PAUSE);
     return;
   }
-  render(); nextCard();
+  // goed geraden: kaart licht groen op en vliegt weg, daarna klapt het nieuwe woord in
+  try { navigator.vibrate && navigator.vibrate(15); } catch(e){}
+  busy = true; render();
+  const card = d === 3 ? $("hardBtn") : $("easyBtn");
+  $("stage").classList.add("hitting"); card.classList.add("hit");
+  const tok = lockTok;
+  setTimeout(() => { if (tok !== lockTok) return; busy = false; nextCard("ok"); }, 260);
 }
 function winGame(team){
   stopAll(); save(); render();
@@ -682,7 +773,8 @@ function winGame(team){
     $("winTeam").textContent = tn(team);
     $("winText").innerHTML = `wint met <b>${S.score[team]}</b> tegen <b>${S.score[o]}</b>`;
     $("winOv").hidden = false;
-    for (let i = 0; i < 3; i++) setTimeout(() => confetti($("winTeam"), i % 2 ? "var(--a)" : "var(--b)"), i * 250);
+    confettiRain(90);
+    for (let i = 0; i < 3; i++) setTimeout(() => confetti($("winTeam"), i % 2 ? "var(--a)" : "var(--b)"), 200 + i * 250);
   }, 500);
 }
 function pause(){
@@ -696,7 +788,7 @@ function resume(){
   timerId = setInterval(tick, 200); $("pauseOv").hidden = true; hostPresence();
 }
 function stopAll(){
-  unlockBonk(); clearInterval(timerId); timerId = null; running = false; paused = false;
+  unlockBonk(); clearInterval(timerId); timerId = null; $("hurry").classList.remove("on"); running = false; paused = false;
   $("pauseOv").hidden = true; remainingMs = S.dur*1000; wakeOff();
 }
 
@@ -737,11 +829,11 @@ function resetScores(){
 }
 
 /* ---------- events ---------- */
-$("startBtn").onclick = () => { goFullscreen(); startTurn(); };
+$("startBtn").onclick = beginTurn;
 $("easyBtn").onclick = ()=>award(1);
 $("hardBtn").onclick = ()=>award(3);
 $("minusBtn").onclick = ()=>award(-1);
-$("skipBtn").onclick = ()=>{ if (running && !paused && !bonkLock) nextCard(); };
+$("skipBtn").onclick = skipCard;
 $("pauseBtn").onclick = pause;
 $("resumeBtn").onclick = resume;
 $("stopBtn").onclick = ()=>endTurn(true);
@@ -802,10 +894,10 @@ $("defaultCardsBtn").onclick = ()=>{
 window.addEventListener("keydown", e=>{
   if (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT" || role === "krant" || !$("joinOv").hidden) return;
   if (!$("rules").hidden) { if (e.key === "Escape" || e.key === "Enter") closeRules(); return; }
-  if (!$("gate").hidden) { if (e.key === "Enter") startTurn(); return; }
+  if (!$("gate").hidden) { if (e.key === "Enter") beginTurn(); return; }
   if (e.key === "p" || e.key === "P") { paused ? resume() : pause(); }
   if (paused || !$("menu").hidden) return;
-  if (e.code === "Space") { e.preventDefault(); if (running && !paused && !bonkLock) nextCard(); }
+  if (e.code === "Space") { e.preventDefault(); skipCard(); }
   if (e.key === "1") award(-1);
   if (e.key === "2") award(1);
   if (e.key === "3") award(3);
@@ -829,6 +921,19 @@ function bonkFx(target){
   clearTimeout(bonkFx.t); bonkFx.t=setTimeout(()=>fx.classList.remove("go"), 1200);
   const el = target || document.querySelector(".app");
   setTimeout(()=>{ el.classList.remove("shake"); void el.offsetWidth; el.classList.add("shake"); thud(); try { navigator.vibrate && navigator.vibrate(150); } catch(e){} }, 330);
+}
+function confettiRain(n){
+  const colors = ["var(--a)", "var(--b)", "var(--good)", "var(--paper)", "var(--bad)"];
+  for (let i = 0; i < n; i++) {
+    const s = document.createElement("i"); s.className = "rain";
+    s.style.left = (Math.random() * 100) + "vw";
+    s.style.background = colors[i % colors.length];
+    s.style.setProperty("--x", (Math.random() * 120 - 60).toFixed(0) + "px");
+    s.style.setProperty("--r", (Math.random() * 900 - 450).toFixed(0) + "deg");
+    const t = 1.8 + Math.random() * 1.6, d = Math.random() * 0.9;
+    s.style.setProperty("--t", t.toFixed(2) + "s"); s.style.setProperty("--d", d.toFixed(2) + "s");
+    document.body.appendChild(s); setTimeout(() => s.remove(), (t + d) * 1000 + 100);
+  }
 }
 function confetti(el, color, spread){
   spread = spread || 1;
