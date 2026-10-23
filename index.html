@@ -101,6 +101,13 @@ button:focus-visible{outline:3px solid var(--b);outline-offset:2px}
 .word.hit{animation:hit .28s ease-in forwards}
 .word.hit::after{animation:hitFlash .28s ease-out forwards}
 .stage.hitting .word:not(.hit){opacity:.45;transition:opacity .15s}
+/* nieuwe kaart: eerst even uitleggen voordat je kunt scoren (tegen snel +3 spammen) */
+.word::before{content:"";position:absolute;left:0;right:0;bottom:0;height:6px;background:currentColor;opacity:0;transform-origin:left;transform:scaleX(0);pointer-events:none}
+.stage.cooling .word::before{opacity:.22;animation:coolBar var(--cool,2s) linear forwards}
+.stage.cooling .tapHint{opacity:.45}
+@keyframes coolBar{to{transform:scaleX(1)}}
+.word.nope{animation:nope .3s ease}
+@keyframes nope{20%{transform:translateX(-7px)}45%{transform:translateX(6px)}70%{transform:translateX(-3px)}}
 @keyframes hit{35%{transform:scale(1.035)}100%{transform:translateY(-10px) scale(.96);opacity:0}}
 @keyframes hitFlash{0%{opacity:0}30%{opacity:.55}100%{opacity:.2}}
 
@@ -676,36 +683,43 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
   <div class="sheet rulesSheet" role="dialog" aria-modal="true" aria-labelledby="rulesTitle">
     <div class="sheetHead"><h2 id="rulesTitle" class="rulesLogo">Zo werkt <span>BONK!</span></h2><button class="close" id="closeRules" aria-label="Sluiten">✕</button></div>
 
-    <section class="rp rp1">
+    <section class="rp rp2">
       <span class="rpNum" aria-hidden="true">1</span>
-      <p class="rpLead">Omschrijf het woord met <mark>alleen woorden van één lettergreep</mark>.</p>
-      <div class="demo">
-        <div class="miniCard"><small>Makkelijk</small><b>Fiets</b></div>
-        <div class="said"><span>twee</span><span>wiel</span><span>trap</span><span>bel</span></div>
-      </div>
+      <p class="rpLead">Twee teams. Om de beurt legt één speler woorden uit aan zijn eigen team.</p>
+      <p class="rpNote">Je hebt 30 tot 60 seconden. Hoe meer woorden je team raadt, hoe meer punten. Wissel elke beurt van uitlegger.</p>
     </section>
 
-    <section class="rp rp2">
+    <section class="rp rp1">
       <span class="rpNum" aria-hidden="true">2</span>
-      <p class="rpLead">Geraden? Tik op de kaart.</p>
+      <p class="rpLead">Elke kaart heeft twee woorden. <mark>Jij kiest er één.</mark></p>
       <div class="cardPair">
         <div class="miniCard"><i class="p1">+1</i><b>Strand</b></div>
         <div class="miniCard hard"><i class="p3">+3</i><b>Zandkasteel</b></div>
       </div>
-      <p class="rpNote">Jij kiest welk woord je doet. Overslaan bestaat niet.</p>
+      <p class="rpNote">Geraden? Tik op dat woord en je krijgt meteen een nieuwe kaart. Overslaan kan niet.</p>
+    </section>
+
+    <section class="rp rp2">
+      <span class="rpNum" aria-hidden="true">3</span>
+      <p class="rpLead">Uitleggen mag alleen met woorden van één lettergreep.</p>
+      <div class="demo">
+        <div class="miniCard"><small>Makkelijk</small><b>Fiets</b></div>
+        <div class="said"><span>twee</span><span>wiel</span><span>trap</span><span>bel</span></div>
+      </div>
+      <p class="rpNote">Het woord zelf of een stuk ervan zeggen mag nooit.</p>
     </section>
 
     <section class="rp rp3">
-      <span class="rpNum" aria-hidden="true">3</span>
+      <span class="rpNum" aria-hidden="true">4</span>
       <div class="bonkDemo"><span class="oops">“fiet·sen·rek”</span><span class="burstMini">BONK!</span></div>
-      <p class="rpLead">Woord met meer lettergrepen gezegd? De tegenpartij roept BONK. Dat kost een punt.</p>
-      <p class="rpNote">Twijfel? Klap mee. Eén klap is één lettergreep.</p>
+      <p class="rpLead">Fout? De tegenpartij roept BONK! Dat kost een punt en je krijgt een nieuwe kaart.</p>
+      <p class="rpNote">Fout is: een woord van twee of meer lettergrepen, of (een stuk van) het woord op de kaart zeggen. Twijfel? Klap mee: één klap is één lettergreep.</p>
     </section>
 
     <section class="rp rp4">
-      <span class="rpNum" aria-hidden="true">4</span>
-      <p class="rpLead">Tijd op? Het andere team is aan de beurt.</p>
-      <p class="rpNote">Wie eerst het doel haalt, wint. Allebei evenveel beurten, dus het andere team mag altijd nog terugslaan.</p>
+      <span class="rpNum" aria-hidden="true">5</span>
+      <p class="rpLead">Tijd op? Dan is het andere team aan de beurt.</p>
+      <p class="rpNote">Wie als eerste het doel haalt, wint. Beide teams krijgen evenveel beurten, dus het andere team mag altijd nog terugslaan.</p>
     </section>
 
     <p class="rpFoot">Opgerolde krant erbij om echt te bonken? Mag. Wel zacht.</p>
@@ -780,7 +794,7 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 
 <script>
 (function(){
-const VERSION = "v30 · 23 okt 23:45";
+const VERSION = "v31 · 24 okt 00:00";
 document.querySelectorAll("[data-ver]").forEach(el => el.textContent = "BONK " + VERSION);
 
 const DEFAULT_CARDS = [
@@ -845,8 +859,19 @@ function renderWords(anim){
   const st = $("stage");
   st.classList.remove("hitting", "in-deal", "in-ok", "in-skip", "in-bonk");
   $("easyBtn").classList.remove("hit"); $("hardBtn").classList.remove("hit");
-  if (anim) { void st.offsetWidth; st.classList.add("in-" + anim); }
+  if (anim) { void st.offsetWidth; st.classList.add("in-" + anim); startCool(); }
 }
+/* minimale tijd per kaart voordat +1/+3 telt */
+const MIN_CARD_MS = 2000;
+var cardReadyAt = 0, coolT = null;
+function startCool(){
+  cardReadyAt = Date.now() + MIN_CARD_MS;
+  const st = $("stage"); st.style.setProperty("--cool", MIN_CARD_MS + "ms");
+  st.classList.remove("cooling"); void st.offsetWidth; st.classList.add("cooling");
+  clearTimeout(coolT); coolT = setTimeout(() => st.classList.remove("cooling"), MIN_CARD_MS);
+}
+function cardReady(){ return Date.now() >= cardReadyAt; }
+function nope(d){ const el = $(d === 3 ? "hardBtn" : "easyBtn"); el.classList.remove("nope"); void el.offsetWidth; el.classList.add("nope"); try { navigator.vibrate && navigator.vibrate(30); } catch(e){} }
 function setScore(el, v){
   if (el.textContent === String(v)) return;
   el.textContent = v; el.classList.remove("roll"); void el.offsetWidth; el.classList.add("roll");
@@ -973,6 +998,7 @@ function setLockUi(on){ $("stage").classList.toggle("locked", on); document.quer
 function unlockBonk(){ lockTok++; bonkLock = false; busy = false; setLockUi(false); }
 function award(d){
   if (role === "guest" || !running || paused || bonkLock || busy) return;
+  if (d > 0 && !cardReady()) return nope(d);
   const c = S.cards[S.idx];
   const applied = Math.max(d, -S.score[S.team]);   // nooit onder 0
   S.score[S.team] += applied; S.turnPts += applied;
@@ -1539,6 +1565,7 @@ function tapScore(d){
   // net na GO! weet deze telefoon soms nog niet dat de beurt loopt; de spel-telefoon controleert het toch
   const justStarted = Math.abs(serverNow() - countEndS) < 2500;
   if ((!running && !justStarted) || paused || bonkLock || pendingTap === mirror.seq) return;
+  if (d > 0 && running && !cardReady()) return nope(d);
   pendingTap = mirror.seq; setTimeout(() => { pendingTap = null; }, 1500);
   sendCmd({ c:"award", d, seq:mirror.seq });
 }
