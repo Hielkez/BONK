@@ -650,7 +650,7 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 
 <script>
 (function(){
-const VERSION = "v17 · 23 okt 21:35";
+const VERSION = "v18 · 23 okt 22:40";
 document.querySelectorAll("[data-ver]").forEach(el => el.textContent = "BONK " + VERSION);
 
 const DEFAULT_CARDS = [
@@ -673,6 +673,11 @@ const S = { cards:[], idx:0, team:"A", score:{A:0,B:0}, dur:90, turnPts:0, log:[
 try { const d = JSON.parse(localStorage.getItem(KEY) || "null"); if (d && typeof d === "object") Object.assign(S, d); } catch(e){}
 const save = () => { if (role === "guest") return; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} };
 const source = () => (S.custom && S.custom.length) ? S.custom : base;
+// volgende kaart; is de hele stapel gespeeld, dan pas opnieuw schudden (zo komt niets terug voor alles geweest is)
+function advanceCard(){
+  if (S.idx + 1 >= S.cards.length) { S.cards = shuffled(source()); S.idx = 0; }
+  else S.idx++;
+}
 function shuffled(arr){ const a = arr.map(c=>({easy:c.easy, hard:c.hard})); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 if (!Array.isArray(S.cards) || !S.cards.length) { S.cards = shuffled(source()); S.idx = 0; }
 if (S.idx >= S.cards.length) S.idx = 0;
@@ -805,7 +810,7 @@ function endTurn(manual){
   running = false; paused = false; $("pauseOv").hidden = true;
   const prev = S.team, pts = S.turnPts;
   S.team = other(prev);
-  S.idx = (S.idx + 1) % S.cards.length; cardSeq++;
+  advanceCard(); cardSeq++;
   remainingMs = S.dur*1000;
   save(); render(); wakeOff(); $("hurry").classList.remove("on");
   const go = () => showGate(manual ? "Beurt gestopt · volgende" : "Tijd is op! · volgende",
@@ -814,7 +819,7 @@ function endTurn(manual){
   fx("timeup");
   setTimeout(go, 1100);
 }
-function nextCard(anim){ lastAnim = anim || "skip"; cardSeq++; S.idx = (S.idx + 1) % S.cards.length; renderWords(lastAnim); save(); hostPresence(); updateRoleView(); }
+function nextCard(anim){ lastAnim = anim || "skip"; cardSeq++; advanceCard(); renderWords(lastAnim); save(); hostPresence(); updateRoleView(); }
 function skipCard(){
   if (role === "guest") { if ((running || Math.abs(serverNow() - countEndS) < 2500) && !paused && !bonkLock && pendingTap !== mirror.seq) { pendingTap = mirror.seq; setTimeout(() => { pendingTap = null; }, 1500); sendCmd({ c:"skip", seq:mirror.seq }); } return; }
   if (running && !paused && !bonkLock && !busy) nextCard("skip");
@@ -854,7 +859,7 @@ function winGame(team){
 }
 function newGame(){
   winTeam = null; $("winOv").hidden = true;
-  S.cards = shuffled(source()); S.idx = 0; cardSeq++;
+  advanceCard(); cardSeq++;   // nieuw spel gaat verder in de stapel, dus geen herhaling
   resetScores();
 }
 function pause(){
@@ -956,7 +961,7 @@ $("winMenuBtn").onclick = ()=>{ openMenu(); };
 
 $("shuffleBtn").onclick = ()=>{ S.cards = shuffled(source()); S.idx = 0; save(); render(); closeMenu(); toast("Geschud", "info"); };
 $("resetScoresBtn").onclick = e=>confirmTap(e.currentTarget, "Punten resetten", ()=>{ resetScores(); closeMenu(); });
-$("resetAllBtn").onclick = e=>confirmTap(e.currentTarget, "Nieuw spel", ()=>{ S.cards = shuffled(source()); S.idx = 0; resetScores(); closeMenu(); });
+$("resetAllBtn").onclick = e=>confirmTap(e.currentTarget, "Nieuw spel", ()=>{ advanceCard(); cardSeq++; resetScores(); closeMenu(); });
 
 $("editBtn").onclick = ()=>{
   $("cardText").value = source().map(c=>`${c.easy} / ${c.hard}`).join("\n");
@@ -1485,7 +1490,7 @@ showGate(S.log.length ? "Verder spelen" : "Klaar om te spelen?");
 function showLobby(){ $("lobbyResume").hidden = !S.log.length; $("lobby").hidden = false; }
 $("lobbyNew").onclick = () => {
   audioOn();
-  if (S.log.length) { S.cards = shuffled(source()); S.idx = 0; cardSeq++; resetScores(); }
+  if (S.log.length) { advanceCard(); cardSeq++; resetScores(); }
   $("lobby").hidden = true;
 };
 $("lobbyResume").onclick = () => { $("lobby").hidden = true; };
