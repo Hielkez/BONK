@@ -18,4 +18,4 @@ De telefoons verbinden direct met elkaar via WebRTC. [PeerJS](https://peerjs.com
 
 Menu → Kaarten bewerken. Eén kaart per regel: `makkelijk / moeilijk`.
 
-De standaardkaarten (bijna 2500) staan in [`words.json`](words.json). Het spel speelt de hele stapel af voordat er iets terugkomt, ook over meerdere potjes heen. Pas je de lijst aan, verhoog dan `version`; dan schudt het spel de nieuwe kaarten.
+De standaardkaarten (ruim 1700) staan in [`words.json`](words.json). Het spel speelt de hele stapel af voordat er iets terugkomt, ook over meerdere potjes heen. Pas je de lijst aan, verhoog dan `version`; dan schudt het spel de nieuwe kaarten.
