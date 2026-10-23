@@ -88,11 +88,13 @@ button:focus-visible{outline:3px solid var(--b);outline-offset:2px}
 .word.hard{background:color-mix(in srgb, var(--b) 24%, var(--paper))}
 .hard .wTag b{background:var(--ink);color:var(--b)}
 /* kaart-overgangen */
-.in-deal .word{animation:inDeal .4s cubic-bezier(.2,.9,.3,1.15) both}
-.in-ok .word{animation:inFlip .42s cubic-bezier(.2,.8,.3,1.1) both}
-.in-skip .word{animation:inSlide .32s cubic-bezier(.2,.8,.3,1) both}
-.in-bonk .word{animation:inDrop .4s cubic-bezier(.2,.9,.3,1.2) both}
-.in-deal .word.hard,.in-ok .word.hard,.in-skip .word.hard,.in-bonk .word.hard{animation-delay:.06s}
+/* één kaart = twee woorden: de hele kaart beweegt als geheel */
+.stage.in-deal{animation:inDeal .4s cubic-bezier(.2,.9,.3,1.15) both}
+.stage.in-ok, .stage.in-skip{animation:flyIn .4s cubic-bezier(.2,.9,.3,1.08) both}
+.stage.in-bonk{animation:inDrop .4s cubic-bezier(.2,.9,.3,1.2) both}
+.stage.flyOut{animation:flyOut .24s cubic-bezier(.55,0,.9,.45) forwards;pointer-events:none}
+@keyframes flyOut{to{transform:translateX(-125%) rotate(-9deg);opacity:.2}}
+@keyframes flyIn{from{transform:translateX(120%) rotate(7deg)}}
 @keyframes inDeal{from{transform:translateY(28px) scale(.95);opacity:0}}
 @keyframes inFlip{from{transform:perspective(800px) rotateX(-80deg);opacity:0}}
 @keyframes inSlide{from{transform:translateX(70%) rotate(5deg);opacity:0}}
@@ -109,7 +111,7 @@ button:focus-visible{outline:3px solid var(--b);outline-offset:2px}
 @keyframes coolBar{to{transform:scaleX(1)}}
 .word.nope{animation:nope .3s ease}
 @keyframes nope{20%{transform:translateX(-7px)}45%{transform:translateX(6px)}70%{transform:translateX(-3px)}}
-@keyframes hit{35%{transform:scale(1.035)}100%{transform:translateY(-10px) scale(.96);opacity:0}}
+@keyframes hit{40%{transform:scale(1.04)}100%{transform:scale(1)}}
 @keyframes hitFlash{0%{opacity:0}30%{opacity:.55}100%{opacity:.2}}
 
 /* Actions */
@@ -815,7 +817,7 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 
 <script>
 (function(){
-const VERSION = "v36 · 24 okt 00:35";
+const VERSION = "v37 · 24 okt 00:45";
 document.querySelectorAll("[data-ver]").forEach(el => el.textContent = "BONK " + VERSION);
 
 const DEFAULT_CARDS = [
@@ -878,7 +880,7 @@ function renderWords(anim){
   }
   $("counter").textContent = role === "guest" ? `kaart ${mirror.idx+1} / ${mirror.total}` : `kaart ${S.idx+1} / ${S.cards.length}`;
   const st = $("stage");
-  st.classList.remove("hitting", "in-deal", "in-ok", "in-skip", "in-bonk");
+  st.classList.remove("hitting", "flyOut", "in-deal", "in-ok", "in-skip", "in-bonk");
   $("easyBtn").classList.remove("hit"); $("hardBtn").classList.remove("hit");
   if (anim) { void st.offsetWidth; st.classList.add("in-" + anim); startCool(); }
 }
@@ -1048,7 +1050,7 @@ function award(d){
   busy = true; render();
   fx("ok", { d, team:S.team });
   const tok = lockTok;
-  setTimeout(() => { if (tok !== lockTok) return; busy = false; nextCard("ok"); }, 260);
+  setTimeout(() => { if (tok !== lockTok) return; busy = false; nextCard("ok"); }, 450);
 }
 function winGame(team){
   stopAll(); winTeam = team; save(); render();
@@ -1271,7 +1273,9 @@ function playFx(m){
     if ($("krantOv").hidden) {
       try { navigator.vibrate && navigator.vibrate(15); } catch(e){}
       const card = d === 3 ? $("hardBtn") : $("easyBtn");
-      $("stage").classList.add("hitting"); card.classList.add("hit");
+      const st = $("stage"); st.classList.add("hitting"); card.classList.add("hit");
+      const seqNow = role === "guest" ? mirror.seq : cardSeq;
+      setTimeout(() => { if ((role === "guest" ? mirror.seq : cardSeq) === seqNow && st.classList.contains("hitting")) st.classList.add("flyOut"); }, 210);
     }
   } else if (m.k === "bonk") {
     bonkFx($("krantOv").hidden ? null : $("krantInner"));
