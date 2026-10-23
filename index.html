@@ -247,6 +247,9 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
 .kBar.still .kFill{background:var(--muted)}
 #kSecs{position:relative;display:grid;place-items:center;height:100%;font-family:var(--display);font-weight:800;font-size:20px;font-variant-numeric:tabular-nums;color:var(--fg);text-shadow:0 1px 3px rgba(0,0,0,.55)}
 .kBar.low #kSecs{animation:pulse 1s ease-in-out infinite}
+.toast.small{font-size:40px}
+.team.bump{animation:bump .4s cubic-bezier(.2,1.6,.4,1)}
+@keyframes bump{40%{transform:scale(1.12)}}
 </style>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -502,7 +505,7 @@ textarea{width:100%;box-sizing:border-box;min-height:180px;border-radius:14px;bo
 
 <script>
 (function(){
-const VERSION = "v10 · 23 okt 20:20";
+const VERSION = "v11 · 23 okt 20:25";
 document.querySelectorAll("[data-ver]").forEach(el => el.textContent = "BONK " + VERSION);
 
 const DEFAULT_CARDS = [
@@ -582,8 +585,10 @@ document.addEventListener("visibilitychange", ()=>{ if (document.visibilityState
 
 /* ---------- toast ---------- */
 let toastT;
-function toast(text, kind){
-  const t = $("toast"); t.textContent = text; t.className = "toast " + kind;
+function toast(text, kind, anchor){
+  const t = $("toast"); t.textContent = text; t.className = "toast " + kind + (anchor ? " small" : "");
+  if (anchor) { const r = anchor.getBoundingClientRect(); t.style.left = (r.left + r.width/2) + "px"; t.style.top = (r.bottom + 26) + "px"; }
+  else { t.style.left = ""; t.style.top = ""; }
   void t.offsetWidth; t.classList.add("show");
   clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove("show"), 650);
 }
@@ -653,8 +658,13 @@ function award(d){
     winGame(S.team); return;
   }
   if (d < 0) bonkFx();
-  else { toast(fmt(d), "pos"); beep(660, 0.1, 0.08); setTimeout(()=>beep(990, 0.12, 0.08), 90);
-    confetti(d === 3 ? $("hardBtn") : $("easyBtn"), d === 3 ? "var(--b)" : "var(--good)"); }
+  else {
+    // punten vliegen naar de score bovenin, zodat het nieuwe woord meteen leesbaar is
+    const box = $("team" + S.team);
+    toast(fmt(d), "pos", box); beep(660, 0.1, 0.08); setTimeout(()=>beep(990, 0.12, 0.08), 90);
+    confetti(box, d === 3 ? "var(--b)" : "var(--good)", 0.45);
+    box.classList.remove("bump"); void box.offsetWidth; box.classList.add("bump");
+  }
   if (d < 0) {
     bonkLock = true; setLockUi(true); render();
     const tok = ++lockTok;
@@ -820,9 +830,10 @@ function bonkFx(target){
   const el = target || document.querySelector(".app");
   setTimeout(()=>{ el.classList.remove("shake"); void el.offsetWidth; el.classList.add("shake"); thud(); try { navigator.vibrate && navigator.vibrate(150); } catch(e){} }, 330);
 }
-function confetti(el, color){
+function confetti(el, color, spread){
+  spread = spread || 1;
   const r=el.getBoundingClientRect(), cx=r.left+r.width/2, cy=r.top+r.height/2;
-  for(let i=0;i<18;i++){ const s=document.createElement("i"); s.className="bit"; const a=Math.random()*Math.PI*2, dist=60+Math.random()*110;
+  for(let i=0;i<18;i++){ const s=document.createElement("i"); s.className="bit"; const a=Math.random()*Math.PI*2, dist=(60+Math.random()*110)*spread;
     s.style.left=cx+"px"; s.style.top=cy+"px"; s.style.setProperty("--x",(Math.cos(a)*dist).toFixed(0)+"px"); s.style.setProperty("--y",(Math.sin(a)*dist).toFixed(0)+"px");
     s.style.setProperty("--r",(Math.random()*720-360).toFixed(0)+"deg"); s.style.background = i%3 ? color : "var(--paper)";
     document.body.appendChild(s); setTimeout(()=>s.remove(), 800); }
