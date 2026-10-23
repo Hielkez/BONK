@@ -134,8 +134,8 @@ button:focus-visible{outline:3px solid var(--b);outline-offset:2px}
 .secBtn{min-height:56px;border-radius:var(--r);background:var(--raise);font-weight:700}
 
 /* Menu sheet */
-.sheetWrap{position:fixed;inset:0;z-index:30;background:rgba(5,18,22,.6);display:flex;align-items:flex-end;justify-content:center}
-.sheet{width:100%;max-width:560px;max-height:88%;overflow-y:auto;background:var(--bg);border-radius:22px 22px 0 0;box-sizing:border-box;
+.sheetWrap{position:fixed;inset:0;z-index:30;background:rgba(5,18,22,.6);display:flex;flex-direction:column;align-items:center;justify-content:flex-start}
+.sheet{width:100%;max-width:560px;max-height:88vh;max-height:88dvh;min-height:0;flex-shrink:1;margin-top:auto;overflow-y:auto;background:var(--bg);border-radius:22px 22px 0 0;box-sizing:border-box;
   padding:18px max(18px, env(safe-area-inset-right, 0px)) max(24px, env(safe-area-inset-bottom, 0px)) max(18px, env(safe-area-inset-left, 0px));display:flex;flex-direction:column;gap:22px}
 .sheetHead{display:flex;justify-content:space-between;align-items:center}
 .sheetHead h2{font-family:var(--display);font-weight:800;font-size:24px;margin:0}
@@ -776,7 +776,7 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 
 <script>
 (function(){
-const VERSION = "v26 · 23 okt 23:25";
+const VERSION = "v27 · 23 okt 23:20";
 document.querySelectorAll("[data-ver]").forEach(el => el.textContent = "BONK " + VERSION);
 
 const DEFAULT_CARDS = [
