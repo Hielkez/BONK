@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>BONK mictest</title>
+<style>
+  :root{--bg:#0d222b;--raise:#1d3640;--fg:#f4efe2;--muted:#8fa6ad;--good:#4fc98a;--bad:#ef6461;--b:#f3c24f}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,sans-serif}
+  body{display:flex;flex-direction:column;gap:16px;padding:max(20px,env(safe-area-inset-top)) 18px 24px;box-sizing:border-box}
+  h1{margin:0;font-size:24px} h1 span{color:var(--b)}
+  p{margin:0;color:var(--muted);line-height:1.45}
+  button{font:inherit;font-weight:800;font-size:20px;border:0;border-radius:18px;padding:18px;background:var(--b);color:#13202a}
+  button.on{background:var(--bad);color:#fff}
+  #status{font-weight:700;color:var(--fg)}
+  #words{display:flex;flex-wrap:wrap;gap:8px;min-height:60px;align-content:flex-start}
+  #words span{padding:6px 12px;border-radius:999px;background:var(--raise);font-weight:700}
+  #words span.bad{background:var(--bad);color:#fff}
+  #bonk{position:fixed;inset:0;display:grid;place-items:center;background:rgba(239,100,97,.92);font-size:22vw;font-weight:900;color:#fff;pointer-events:none;opacity:0;transition:opacity .15s}
+  #bonk.show{opacity:1}
+  #log{font:12px ui-monospace,monospace;color:var(--muted);white-space:pre-wrap}
+</style>
+</head>
+<body>
+  <h1>BONK <span>mictest</span></h1>
+  <p>Druk op start en praat. Elk woord dat de telefoon hoort, verschijnt hieronder. Zeg je een woord van meer dan één lettergreep, dan roept hij BONK.</p>
+  <button id="go">Start luisteren</button>
+  <p id="status">Nog niet gestart.</p>
+  <div id="words"></div>
+  <p id="log"></p>
+  <div id="bonk">BONK!</div>
+<script>
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const $ = id => document.getElementById(id);
+const log = m => { $("log").textContent = (new Date().toLocaleTimeString() + "  " + m + "\n" + $("log").textContent).slice(0, 2000); };
+log("standalone (beginscherm-app): " + (navigator.standalone === true || matchMedia("(display-mode: standalone)").matches));
+log("spraakherkenning beschikbaar: " + !!SR);
+
+// Nederlandse lettergrepen: tel klinkergroepen; "ij" telt als klinker, ë/ï beginnen een nieuwe lettergreep
+function syllables(w){
+  w = w.toLowerCase().replace(/[^a-zàáâäèéêëïíîóôöúûüij]/g, "").replace(/ij/g, "y");
+  const groups = w.match(/[ëï]|[aeiouyàáâäèéêíîóôöúûü]+/g);
+  return groups ? groups.length : 0;
+}
+
+let rec = null, on = false, seen = 0;
+function bonk(){ $("bonk").classList.add("show"); try{ navigator.vibrate && navigator.vibrate(200); }catch(e){} setTimeout(() => $("bonk").classList.remove("show"), 700); }
+function show(text){
+  const words = text.trim().split(/\s+/).filter(Boolean);
+  $("words").innerHTML = "";
+  words.forEach((w, i) => {
+    const n = syllables(w), el = document.createElement("span");
+    el.textContent = w + " · " + n; if (n > 1) el.className = "bad";
+    $("words").appendChild(el);
+    if (i >= seen && n > 1) bonk();
+  });
+  seen = Math.max(seen, words.length);
+}
+function start(){
+  if (!SR) { $("status").textContent = "Deze browser heeft geen spraakherkenning."; return; }
+  rec = new SR(); rec.lang = "nl-NL"; rec.continuous = true; rec.interimResults = true;
+  rec.onstart = () => { $("status").textContent = "Luistert…"; log("gestart"); };
+  rec.onerror = e => { $("status").textContent = "Fout: " + e.error; log("fout: " + e.error); };
+  rec.onend = () => { log("gestopt"); if (on) { try { rec.start(); } catch(e){ log("herstart mislukt: " + e.message); } } else $("status").textContent = "Gestopt."; };
+  rec.onresult = e => {
+    let t = ""; for (let i = 0; i < e.results.length; i++) t += e.results[i][0].transcript + " ";
+    show(t);
+  };
+  seen = 0; on = true; rec.start();
+  $("go").textContent = "Stop"; $("go").classList.add("on");
+}
+function stop(){ on = false; try { rec && rec.stop(); } catch(e){} $("go").textContent = "Start luisteren"; $("go").classList.remove("on"); }
+$("go").onclick = () => on ? stop() : start();
+</script>
+</body>
+</html>
