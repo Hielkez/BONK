@@ -755,12 +755,12 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 
     <section class="rp rp1">
       <span class="rpNum" aria-hidden="true">2</span>
-      <p class="rpLead">Elke kaart heeft twee woorden. <mark>Jij kiest er één.</mark></p>
+      <p class="rpLead">Elke kaart heeft een makkelijk en een moeilijk woord <mark>die bij elkaar horen.</mark></p>
       <div class="cardPair">
         <div class="miniCard"><i class="p1">+1</i><b>Strand</b></div>
         <div class="miniCard hard"><i class="p3">+3</i><b>Zandkasteel</b></div>
       </div>
-      <p class="rpNote">Geraden? Tik op dat woord en je krijgt meteen een nieuwe kaart. Overslaan kan niet.</p>
+      <p class="rpNote">Je kunt het makkelijke woord gebruiken als opstapje naar het moeilijke. Per kaart telt maar één woord: tik op het woord dat geraden is en je krijgt meteen een nieuwe kaart. Overslaan kan niet.</p>
     </section>
 
     <section class="rp rp2">
@@ -863,7 +863,7 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 
 <script>
 (function(){
-const VERSION = "v44 · 5 nov 21:30";
+const VERSION = "v45 · 5 nov 21:40";
 document.querySelectorAll("[data-ver]").forEach(el => el.textContent = "BONK " + VERSION);
 
 const DEFAULT_CARDS = [
