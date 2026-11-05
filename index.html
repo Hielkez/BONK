@@ -121,6 +121,25 @@ button:focus-visible{outline:3px solid var(--b);outline-offset:2px}
 .act small{font-weight:600;font-size:12px;color:var(--muted)}
 .act.bad{background:color-mix(in srgb, var(--bad) 22%, var(--raise));color:#ffd9d7}
 .act.bad small{color:#f3aeab}
+.actions.hasPeek{grid-template-columns:1fr 1.15fr 1fr}
+.act.peek{background:color-mix(in srgb, var(--b) 22%, var(--raise));color:var(--b);position:relative;overflow:hidden}
+.act.peek.on{background:var(--b);color:var(--ink)}
+.act.peek.on small{color:var(--ink)}
+.act.peek::after{content:"";position:absolute;left:0;bottom:0;height:4px;width:100%;background:currentColor;opacity:0;transform-origin:left}
+.act.peek.on::after{opacity:.35;animation:peekBar 4s linear forwards}
+@keyframes peekBar{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+/* 1-tegen-1 op één telefoon: woorden verborgen tot de rader op "Laat zien" tikt */
+.stage.hideWords:not(.peek) .w{font-size:0}
+.stage.hideWords:not(.peek) .w::before{content:"?";font-size:72px;opacity:.18}
+.stage.hideWords:not(.peek) .tapHint{opacity:.55}
+.hideToggle{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 14px;border-radius:16px;background:var(--raise);color:var(--fg);font:inherit;border:2px solid transparent}
+.hideToggle b{display:block;font-size:16px}
+.hideToggle small{display:block;font-size:12.5px;line-height:1.35;color:var(--muted);margin-top:2px}
+.hideToggle .sw{flex:0 0 auto;width:46px;height:28px;border-radius:14px;background:var(--bg-deep);position:relative;transition:background .2s}
+.hideToggle .sw::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s}
+.hideToggle[aria-pressed="true"]{border-color:var(--b)}
+.hideToggle[aria-pressed="true"] .sw{background:color-mix(in srgb, var(--b) 40%, var(--bg-deep))}
+.hideToggle[aria-pressed="true"] .sw::after{transform:translateX(18px);background:var(--b)}
 .act:active{filter:brightness(1.2)}
 
 /* Overlays */
@@ -567,6 +586,7 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 
   <footer class="actions">
     <button class="act bad" id="minusBtn">BONK!<small>−1 punt</small></button>
+    <button class="act peek" id="peekBtn" hidden>Laat zien<small>4 tellen</small></button>
     <button class="act" id="pauseBtn">Pauze<small>timer stil</small></button>
   </footer>
 </div>
@@ -588,6 +608,7 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
       <div class="sdMid" id="gsTarget"></div>
       <label class="sd b"><input class="tnInput" id="nameB" maxlength="16" placeholder="Team B" autocomplete="off" spellcheck="false" aria-label="Naam team B"><b id="gsB">0</b></label>
     </div>
+    <button class="hideToggle" id="hideToggle" hidden aria-pressed="false"><span class="sw" aria-hidden="true"></span><span><b>Woorden verbergen</b><small>De rader houdt de telefoon vast en laat de uitlegger met “Laat zien” kort kijken.</small></span></button>
     <button class="bigBtn" id="startBtn">Start</button>
     <p class="gHint homeOnly hostOnly" id="gateCodeLine" hidden></p>
     <div class="duo guestOnly" id="duoGuest">
@@ -688,6 +709,7 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
         <p class="wzKicker">Klaar!</p>
         <h2 class="wzTitle">Zin in?</h2>
         <ul class="wzSum" id="wzSum"></ul>
+        <button class="hideToggle" id="hideToggle2" hidden aria-pressed="false"><span class="sw" aria-hidden="true"></span><span><b>Woorden verbergen</b><small>De rader houdt de telefoon vast en laat de uitlegger met “Laat zien” kort kijken.</small></span></button>
       </div>
     </div>
     <button class="bigBtn" id="wzNext">Volgende</button>
@@ -841,7 +863,7 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 
 <script>
 (function(){
-const VERSION = "v42 · 5 nov 14:40";
+const VERSION = "v43 · 5 nov 15:00";
 document.querySelectorAll("[data-ver]").forEach(el => el.textContent = "BONK " + VERSION);
 
 const DEFAULT_CARDS = [
@@ -877,7 +899,7 @@ if (![30,45,60].includes(S.dur)) S.dur = 60;
 if (!S.turns || typeof S.turns !== "object") S.turns = { A:0, B:0 };
 if (![0,15,30,50].includes(S.target)) S.target = 30;
 if (!S.names || typeof S.names !== "object") S.names = {A:"", B:""};
-S.duo = !!S.duo;
+S.duo = !!S.duo; S.hideWords = !!S.hideWords;
 const tn = t => (S.names[t] || "").trim() || (S.duo ? `Speler ${t === "A" ? 1 : 2}` : `Team ${t}`);
 const esc = x => String(x).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
@@ -907,7 +929,7 @@ function renderWords(anim){
   const st = $("stage");
   st.classList.remove("hitting", "flyOut", "preDeal", "in-deal", "in-ok", "in-skip", "in-bonk");
   $("easyBtn").classList.remove("hit"); $("hardBtn").classList.remove("hit");
-  if (anim) { void st.offsetWidth; st.classList.add("in-" + anim); startCool(); }
+  if (anim) { void st.offsetWidth; st.classList.add("in-" + anim); startCool(); if (st.classList.contains("peek")) setPeek(false); }
 }
 /* minimale tijd per kaart voordat +1/+3 telt */
 const MIN_CARD_MS = 1200;
@@ -932,6 +954,7 @@ function render(){
   $("tnA").textContent = tn("A"); $("tnB").textContent = tn("B");
   $("kNameA").textContent = tn("A"); $("kNameB").textContent = tn("B");
   $("kWords").hidden = S.duo; $("kGuess").hidden = !S.duo;
+  updateHide();
   for (const t of ["A","B"]) $("name"+t).placeholder = S.duo ? `Speler ${t === "A" ? 1 : 2}` : `Team ${t}`;
   $("kHint").textContent = S.duo
     ? "Jij raadt. Zegt je tegenstander een woord van meer dan één lettergreep, of (een stuk van) het woord zelf? Tik op BONK: dat kost hem een punt."
@@ -980,7 +1003,7 @@ function showGate(title, result){
   $("startBtn").disabled = !mine;
   $("startBtn").textContent = !mine ? (role === "guest" && !gWelcomed ? "Wachten op het spel…" : `Wachten tot ${tn(S.team)} start`)
     : result ? `Start beurt · ${S.dur} s` : (S.log.length && role !== "guest" ? `Verder · ${tn(S.team)}` : `Start · ${tn(S.team)} begint`);
-  renderDur();
+  renderDur(); updateHide();
   const r = $("gResult");
   if (result) { r.innerHTML = result; r.hidden = false; } else r.hidden = true;
   updateDuo();
@@ -1047,6 +1070,26 @@ function endTurn(how){
   if (how) return go();
   fx("timeup");
   setTimeout(go, 1100);
+}
+/* verbergen: alleen bij 1-tegen-1 op één telefoon */
+const hideMode = () => S.duo && S.hideWords && role !== "guest" && !linked();
+var peekT = null;
+function updateHide(){
+  const on = hideMode();
+  $("stage").classList.toggle("hideWords", on);
+  $("peekBtn").hidden = !on; document.querySelector(".actions").classList.toggle("hasPeek", on);
+  if (!on) setPeek(false);
+  for (const tg of document.querySelectorAll(".hideToggle")) {
+    tg.hidden = !(S.duo && role !== "guest" && !linked());
+    tg.setAttribute("aria-pressed", String(!!S.hideWords));
+  }
+}
+function setPeek(on){
+  clearTimeout(peekT);
+  $("stage").classList.toggle("peek", on);
+  const b = $("peekBtn"); b.classList.remove("on"); if (on) { void b.offsetWidth; b.classList.add("on"); }
+  b.firstChild.textContent = on ? "Verberg" : "Laat zien";
+  if (on) peekT = setTimeout(() => setPeek(false), 4000);
 }
 function nextCard(anim){ lastAnim = anim || "skip"; cardSeq++; advanceCard(); renderWords(lastAnim); save(); hostPresence(); updateRoleView(); }
 /* Na een BONK even niets meer: geen tweede BONK, geen punten, pas daarna een nieuw woord */
@@ -1742,6 +1785,7 @@ function wzRender(){
   next.textContent = wzStep === 4 ? (linked() ? "Verder" : "Verder met één telefoon")
     : wzStep === WZ_STEPS ? (canStartHere() ? `Start · ${tn(S.team)} begint` : "Klaar")
     : "Volgende";
+  updateHide();
   if (wzStep === WZ_STEPS) {
     const ic = k => `<span class="ic b" aria-hidden="true">${SUM_IC[k]}</span>`;
     $("wzSum").innerHTML =
@@ -1771,6 +1815,8 @@ $("wzNext").onclick = () => {
   if (canStartHere()) beginTurn();
 };
 $("wzBack").onclick = () => { if (wzStep > 1) wzShow(wzStep - 1); else { $("wizard").hidden = true; showLobby(); } };
+document.querySelectorAll(".hideToggle").forEach(tg => tg.addEventListener("click", () => { S.hideWords = !S.hideWords; save(); updateHide(); }));
+onTap($("peekBtn"), () => setPeek(!$("stage").classList.contains("peek")));
 document.querySelectorAll(".wzMode button").forEach(b => b.addEventListener("click", () => {
   S.duo = b.dataset.duo === "1"; save(); hostPresence(); wzRender(); render();
 }));
