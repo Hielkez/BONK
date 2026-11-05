@@ -362,6 +362,16 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 .mySeg{grid-template-columns:1fr 1fr}
 .mySeg button{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-inline:8px}
 .duo.linked .duoCode{display:none}
+.kPrev{display:flex;flex-direction:column;align-items:center;gap:6px;width:100%;max-width:360px}
+.kPrev > span{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.pc{display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%}
+.pc i{font-style:normal;display:flex;align-items:center;justify-content:center;gap:6px;min-width:0;padding:8px 10px;border-radius:12px;background:var(--raise);color:var(--muted);font-weight:700;font-size:16px;overflow-wrap:anywhere;text-align:center}
+.pc i.got{background:var(--good);color:#0b1f17}
+.pc i.got::after{content:attr(data-pts);font-size:12px;font-weight:800;opacity:.75}
+.pc.bonked i{background:color-mix(in srgb, var(--bad) 30%, var(--raise));color:var(--fg);text-decoration:line-through;text-decoration-thickness:2px}
+.kPrev.fresh .pc{animation:countIn .35s cubic-bezier(.2,1.5,.4,1) both}
+.gCards{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;width:100%;max-height:34vh;overflow-y:auto}
+.gCards > li > span{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .kGuess{margin:0;font-family:var(--display);font-weight:800;font-size:30px;color:var(--b);text-align:center}
 .kWords{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:340px}
 .kWords div{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:14px;background:var(--paper);color:var(--ink);text-align:center;min-width:0}
@@ -582,6 +592,7 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
     </div>
     <p class="gTitle turnOnly" id="gTitle"></p>
     <p class="gResult" id="gResult" hidden></p>
+    <ul class="gCards" id="gCards" hidden></ul>
     <h1 class="gTeam turnOnly" id="gTeam">Team A</h1>
     <div class="scoreDuo">
       <label class="sd a"><input class="tnInput" id="nameA" maxlength="16" placeholder="Team A" autocomplete="off" spellcheck="false" aria-label="Naam team A"><b id="gsA">0</b></label>
@@ -833,6 +844,7 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
       <div><span>Moeilijk</span><b id="kHard">—</b></div>
     </div>
     <p class="kGuess" id="kGuess" hidden>Raad het woord!</p>
+    <div class="kPrev" id="kPrev" hidden><span>Vorige kaart</span><div class="pc" id="kPrevCard"></div></div>
     <button class="bonkBtn" id="bonkBtn" disabled>BONK!</button>
     <p class="gHint" id="kHint">Zegt de omschrijver een woord van meer dan één lettergreep? Tik op BONK. Zij krijgen dan −1.</p>
     <button class="secBtn" id="krantRetry" hidden style="padding-inline:20px">Opnieuw verbinden</button>
@@ -841,7 +853,7 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 
 <script>
 (function(){
-const VERSION = "v40 · 5 nov 11:30";
+const VERSION = "v41 · 5 nov 14:45";
 document.querySelectorAll("[data-ver]").forEach(el => el.textContent = "BONK " + VERSION);
 
 const DEFAULT_CARDS = [
@@ -932,6 +944,7 @@ function render(){
   $("tnA").textContent = tn("A"); $("tnB").textContent = tn("B");
   $("kNameA").textContent = tn("A"); $("kNameB").textContent = tn("B");
   $("kWords").hidden = S.duo; $("kGuess").hidden = !S.duo;
+  renderPrev();
   for (const t of ["A","B"]) $("name"+t).placeholder = S.duo ? `Speler ${t === "A" ? 1 : 2}` : `Team ${t}`;
   $("kHint").textContent = S.duo
     ? "Jij raadt. Zegt je tegenstander een woord van meer dan één lettergreep, of (een stuk van) het woord zelf? Tik op BONK: dat kost hem een punt."
@@ -983,6 +996,9 @@ function showGate(title, result){
   renderDur();
   const r = $("gResult");
   if (result) { r.innerHTML = result; r.hidden = false; } else r.hidden = true;
+  const cards = shownCards(), gc = $("gCards");
+  gc.hidden = !(S.duo && result && cards.length);
+  if (!gc.hidden) gc.innerHTML = '<li><span>Kaarten van deze beurt</span></li>' + cards.slice().reverse().map(x => `<li>${cardHtml(x)}</li>`).join("");
   updateDuo();
   if (result) $("installBar").hidden = true; else setupInstallBar();
   $("gate").hidden = false;
@@ -1013,7 +1029,7 @@ function beginTurn(remote){
 function startTurn(){
   audioOn();
   $("gate").hidden = true;
-  running = true; paused = false; S.turnPts = 0;
+  running = true; paused = false; S.turnPts = 0; turnCards = [];
   S.turns[S.team] = (S.turns[S.team] || 0) + 1;
   remainingMs = S.dur*1000; endAt = performance.now() + remainingMs; lastSec = null;
   clearInterval(timerId); timerId = setInterval(tick, 200);
@@ -1048,6 +1064,20 @@ function endTurn(how){
   fx("timeup");
   setTimeout(go, 1100);
 }
+function cardHtml(x){
+  const w = (t, on, pts) => `<i class="${on ? "got" : ""}"${on ? ` data-pts="+${pts}"` : ""}>${esc(t)}</i>`;
+  return `<div class="pc${x.d < 0 ? " bonked" : ""}">${w(x.e, x.d === 1, 1)}${w(x.h, x.d === 3, 3)}</div>`;
+}
+var prevKey = "";
+function renderPrev(){
+  const list = shownCards(), last = list[list.length - 1], box = $("kPrev");
+  box.hidden = !S.duo || !last;
+  if (!last) { prevKey = ""; return; }
+  const key = list.length + "|" + last.e;
+  if (key === prevKey) return;
+  prevKey = key; $("kPrevCard").outerHTML = cardHtml(last).replace('<div class="pc', '<div id="kPrevCard" class="pc');
+  box.classList.remove("fresh"); void box.offsetWidth; box.classList.add("fresh");
+}
 function nextCard(anim){ lastAnim = anim || "skip"; cardSeq++; advanceCard(); renderWords(lastAnim); save(); hostPresence(); updateRoleView(); }
 /* Na een BONK even niets meer: geen tweede BONK, geen punten, pas daarna een nieuw woord */
 var cardSeq = 0, bonkLock = false, lockTok = 0, busy = false;
@@ -1061,6 +1091,7 @@ function award(d){
   const applied = Math.max(d, -S.score[S.team]);   // nooit onder 0
   S.score[S.team] += applied; S.turnPts += applied;
   S.log.unshift({team:S.team, d:applied, word: d===3 ? c.hard : d===1 ? c.easy : `${c.easy} / ${c.hard}`});
+  turnCards.push({ e:c.easy, h:c.hard, d }); if (turnCards.length > 40) turnCards.shift();
   if (S.log.length > 200) S.log.length = 200;
   if (S.target && d > 0) {
     const t = S.team, o = other(t), second = S.turns[t] === S.turns[o];
@@ -1255,6 +1286,9 @@ const FIREBASE_CONFIG = window.BONK_FIREBASE || null;   // staat in firebase-con
 var role = "host", myTeam = "A", lastPresSecs = null, lastBonk = 0;
 var hostCode = null, gCode = "", gLast = 0, gConnecting = false, gWelcomed = false, gFailed = false, pendingTap = null;
 var gateInfo = null, winTeam = null, lastAnim = "skip";
+/* kaarten van de huidige/laatste beurt, zodat de rader in 1-tegen-1 achteraf kan zien wat het was */
+var turnCards = [], gTurnCards = [];
+const shownCards = () => role === "guest" ? gTurnCards : turnCards;
 var mirror = { card:null, idx:0, total:0, seq:-1, v:null };
 var fdb = null, fbOnline = false, serverOffset = 0, guests = {}, hostOnline = false, lastFxId = null;
 var stateTimer = null, gSubs = [];
@@ -1427,7 +1461,7 @@ function stateMsg(){
   return { v:VERSION, team:S.team, running, paused, counting, guestTeam:other(myTeam),
     ms: Math.round(running && !paused ? Math.max(0, endAt - performance.now()) : remainingMs),
     endS: running && !paused ? Math.round(serverNow() + (endAt - performance.now())) : null,
-    dur:S.dur, seq:cardSeq, lock:bonkLock, anim:lastAnim, duo:S.duo,
+    dur:S.dur, seq:cardSeq, lock:bonkLock, anim:lastAnim, duo:S.duo, tcards: S.duo ? turnCards : [],
     card: (!S.duo || S.team === other(myTeam)) ? { easy:c.easy, hard:c.hard } : { easy:"", hard:"" }, idx:S.idx, total:S.cards.length,
     score:{ A:S.score.A, B:S.score.B }, names:{ A:S.names.A || "", B:S.names.B || "" }, target:S.target,
     gate: gateInfo ? { title:gateInfo.title, result:gateInfo.result || "" } : null, win: winTeam || null };
@@ -1602,6 +1636,7 @@ function applyState(d){
   S.dur = [30,45,60].includes(d.dur) ? d.dur : 60;
   S.target = [0,15,30,50].includes(d.target) ? d.target : 30;
   S.duo = !!d.duo;
+  gTurnCards = Array.isArray(d.tcards) ? d.tcards.slice(-40).map(x => ({ e:String(x.e || ""), h:String(x.h || ""), d:Number(x.d) || 0 })) : [];
   const seq = num(d.seq, 0), cardChanged = seq !== mirror.seq, wasRunning = running;
   mirror = { card: { easy: String((d.card && d.card.easy) || "—"), hard: String((d.card && d.card.hard) || "—") }, idx: num(d.idx, 0), total: num(d.total, 0), seq, v: d.v };
   running = !!d.running; paused = !!d.paused; counting = !!d.counting; bonkLock = !!d.lock;
