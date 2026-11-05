@@ -362,6 +362,7 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 .mySeg{grid-template-columns:1fr 1fr}
 .mySeg button{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-inline:8px}
 .duo.linked .duoCode{display:none}
+.kGuess{margin:0;font-family:var(--display);font-weight:800;font-size:30px;color:var(--b);text-align:center}
 .kWords{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:340px}
 .kWords div{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:14px;background:var(--paper);color:var(--ink);text-align:center;min-width:0}
 .kWords span{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)}
@@ -414,6 +415,11 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 .wzDots{flex:1;display:flex;gap:6px}
 .wzDots i{flex:1;height:6px;border-radius:3px;background:var(--raise);transition:background .35s}
 .wzDots i.on{background:var(--b)}
+.wzMode{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:2px 0 6px}
+.wzMode button{font:inherit;text-align:left;display:flex;flex-direction:column;gap:3px;padding:12px 14px;border-radius:16px;border:2px solid transparent;background:var(--raise);color:var(--fg);cursor:pointer;transition:border-color .2s,background .2s}
+.wzMode b{font-size:16px;font-weight:800}
+.wzMode small{font-size:12.5px;line-height:1.3;color:var(--muted)}
+.wzMode button[aria-pressed="true"]{border-color:var(--b);background:color-mix(in srgb, var(--b) 14%, var(--raise))}
 .wzCount{font-size:13px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;min-width:36px;text-align:right}
 .wzViewport{position:relative;flex:1;min-height:0;overflow:hidden}
 .wzPage{position:absolute;inset:0;overflow-y:auto;display:flex;flex-direction:column;justify-content:center;gap:16px;padding:4px 2px;
@@ -634,7 +640,11 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
     <div class="wzViewport">
       <div class="wzPage" data-step="1">
         <p class="wzKicker">Stap 1</p>
-        <h2 class="wzTitle">Hoe heten de teams?</h2>
+        <h2 class="wzTitle" id="wzNameTitle">Hoe heten de teams?</h2>
+        <div class="wzMode" role="group" aria-label="Met hoeveel spelen jullie?">
+          <button data-duo="0" aria-pressed="true"><b>Twee teams</b><small>Je legt uit aan je teamgenoten</small></button>
+          <button data-duo="1" aria-pressed="false"><b>Met z’n tweeën</b><small>Jij legt uit, de ander raadt en BONKt</small></button>
+        </div>
         <label class="wzName a"><i></i><input id="wzNameA" maxlength="16" placeholder="Team A" autocomplete="off" spellcheck="false" aria-label="Naam team A"></label>
         <p class="wzVs">tegen</p>
         <label class="wzName b"><i></i><input id="wzNameB" maxlength="16" placeholder="Team B" autocomplete="off" spellcheck="false" aria-label="Naam team B"></label>
@@ -718,6 +728,7 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
       <span class="rpNum" aria-hidden="true">1</span>
       <p class="rpLead">Twee teams. Om de beurt legt één speler woorden uit aan zijn eigen team.</p>
       <p class="rpNote">Je hebt 30 tot 60 seconden. Hoe meer woorden je team raadt, hoe meer punten. Wissel elke beurt van uitlegger.</p>
+      <p class="rpNote">Met z’n tweeën? Dan leg je uit aan je tegenstander. Die raadt én let op je fouten.</p>
     </section>
 
     <section class="rp rp1">
@@ -821,15 +832,16 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
       <div><span>Makkelijk</span><b id="kEasy">—</b></div>
       <div><span>Moeilijk</span><b id="kHard">—</b></div>
     </div>
+    <p class="kGuess" id="kGuess" hidden>Raad het woord!</p>
     <button class="bonkBtn" id="bonkBtn" disabled>BONK!</button>
-    <p class="gHint">Zegt de omschrijver een woord van meer dan één lettergreep? Tik op BONK. Zij krijgen dan −1.</p>
+    <p class="gHint" id="kHint">Zegt de omschrijver een woord van meer dan één lettergreep? Tik op BONK. Zij krijgen dan −1.</p>
     <button class="secBtn" id="krantRetry" hidden style="padding-inline:20px">Opnieuw verbinden</button>
   </div>
 </section>
 
 <script>
 (function(){
-const VERSION = "v39 · 24 okt 01:15";
+const VERSION = "v40 · 5 nov 11:30";
 document.querySelectorAll("[data-ver]").forEach(el => el.textContent = "BONK " + VERSION);
 
 const DEFAULT_CARDS = [
@@ -865,7 +877,8 @@ if (![30,45,60].includes(S.dur)) S.dur = 60;
 if (!S.turns || typeof S.turns !== "object") S.turns = { A:0, B:0 };
 if (![0,15,30,50].includes(S.target)) S.target = 30;
 if (!S.names || typeof S.names !== "object") S.names = {A:"", B:""};
-const tn = t => (S.names[t] || "").trim() || `Team ${t}`;
+S.duo = !!S.duo;
+const tn = t => (S.names[t] || "").trim() || (S.duo ? `Speler ${t === "A" ? 1 : 2}` : `Team ${t}`);
 const esc = x => String(x).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
 let running=false, paused=false, remainingMs=S.dur*1000, endAt=0, timerId=null, lastSec=null;
@@ -918,6 +931,11 @@ function render(){
   $("turnLabel").textContent = tn(S.team);
   $("tnA").textContent = tn("A"); $("tnB").textContent = tn("B");
   $("kNameA").textContent = tn("A"); $("kNameB").textContent = tn("B");
+  $("kWords").hidden = S.duo; $("kGuess").hidden = !S.duo;
+  for (const t of ["A","B"]) $("name"+t).placeholder = S.duo ? `Speler ${t === "A" ? 1 : 2}` : `Team ${t}`;
+  $("kHint").textContent = S.duo
+    ? "Jij raadt. Zegt je tegenstander een woord van meer dan één lettergreep, of (een stuk van) het woord zelf? Tik op BONK: dat kost hem een punt."
+    : "Zegt de omschrijver een woord van meer dan één lettergreep? Tik op BONK. Zij krijgen dan −1.";
   setScore($("kScoreA"), S.score.A); setScore($("kScoreB"), S.score.B);
   $("kGoal").textContent = S.target ? `Spel tot ${S.target} punten` : "Spel zonder eindstand";
   $("kTeamA").classList.toggle("active", S.team === "A"); $("kTeamB").classList.toggle("active", S.team === "B");
@@ -1409,7 +1427,8 @@ function stateMsg(){
   return { v:VERSION, team:S.team, running, paused, counting, guestTeam:other(myTeam),
     ms: Math.round(running && !paused ? Math.max(0, endAt - performance.now()) : remainingMs),
     endS: running && !paused ? Math.round(serverNow() + (endAt - performance.now())) : null,
-    dur:S.dur, seq:cardSeq, lock:bonkLock, anim:lastAnim, card:{ easy:c.easy, hard:c.hard }, idx:S.idx, total:S.cards.length,
+    dur:S.dur, seq:cardSeq, lock:bonkLock, anim:lastAnim, duo:S.duo,
+    card: (!S.duo || S.team === other(myTeam)) ? { easy:c.easy, hard:c.hard } : { easy:"", hard:"" }, idx:S.idx, total:S.cards.length,
     score:{ A:S.score.A, B:S.score.B }, names:{ A:S.names.A || "", B:S.names.B || "" }, target:S.target,
     gate: gateInfo ? { title:gateInfo.title, result:gateInfo.result || "" } : null, win: winTeam || null };
 }
@@ -1582,6 +1601,7 @@ function applyState(d){
   S.names = { A: String((d.names && d.names.A) || "").slice(0, 16), B: String((d.names && d.names.B) || "").slice(0, 16) };
   S.dur = [30,45,60].includes(d.dur) ? d.dur : 60;
   S.target = [0,15,30,50].includes(d.target) ? d.target : 30;
+  S.duo = !!d.duo;
   const seq = num(d.seq, 0), cardChanged = seq !== mirror.seq, wasRunning = running;
   mirror = { card: { easy: String((d.card && d.card.easy) || "—"), hard: String((d.card && d.card.hard) || "—") }, idx: num(d.idx, 0), total: num(d.total, 0), seq, v: d.v };
   running = !!d.running; paused = !!d.paused; counting = !!d.counting; bonkLock = !!d.lock;
@@ -1713,7 +1733,9 @@ const SUM_IC = {
 function wzRender(){
   document.querySelectorAll(".wzChoice[data-t]").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.t === S.target)));
   document.querySelectorAll(".wzChoice[data-dur]").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.dur === S.dur)));
-  for (const t of ["A","B"]) { const inp = $("wzName"+t); if (document.activeElement !== inp) inp.value = S.names[t] || ""; }
+  for (const t of ["A","B"]) { const inp = $("wzName"+t); if (document.activeElement !== inp) inp.value = S.names[t] || ""; inp.placeholder = S.duo ? `Speler ${t === "A" ? 1 : 2}` : `Team ${t}`; }
+  document.querySelectorAll(".wzMode button").forEach(b => b.setAttribute("aria-pressed", String((b.dataset.duo === "1") === S.duo)));
+  $("wzNameTitle").textContent = S.duo ? "Hoe heten jullie?" : "Hoe heten de teams?";
   document.querySelectorAll("#wzDots i").forEach((d, i) => d.classList.toggle("on", i < wzStep));
   $("wzCount").textContent = `${wzStep} / ${WZ_STEPS}`;
   const next = $("wzNext");
@@ -1749,6 +1771,9 @@ $("wzNext").onclick = () => {
   if (canStartHere()) beginTurn();
 };
 $("wzBack").onclick = () => { if (wzStep > 1) wzShow(wzStep - 1); else { $("wizard").hidden = true; showLobby(); } };
+document.querySelectorAll(".wzMode button").forEach(b => b.addEventListener("click", () => {
+  S.duo = b.dataset.duo === "1"; save(); hostPresence(); wzRender(); render();
+}));
 document.addEventListener("click", e => {
   const c = e.target.closest(".wzChoice"); if (!c) return;
   if (c.dataset.t !== undefined) S.target = +c.dataset.t;
