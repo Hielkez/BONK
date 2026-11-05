@@ -36,40 +36,79 @@ const log = m => { $("log").textContent = (new Date().toLocaleTimeString() + "  
 log("standalone (beginscherm-app): " + (navigator.standalone === true || matchMedia("(display-mode: standalone)").matches));
 log("spraakherkenning beschikbaar: " + !!SR);
 
-// Nederlandse lettergrepen: tel klinkergroepen; "ij" telt als klinker, ë/ï beginnen een nieuwe lettergreep
-function syllables(w){
-  w = w.toLowerCase().replace(/[^a-zàáâäèéêëïíîóôöúûüij]/g, "").replace(/ij/g, "y");
-  const groups = w.match(/[ëï]|[aeiouyàáâäèéêíîóôöúûü]+/g);
-  return groups ? groups.length : 0;
+// ---------- lettergrepen tellen ----------
+const VOWELS = /[ëï]|[aeiouyàáâäèéêíîóôöúûü]+/g;
+function vowelGroups(w){
+  w = w.toLowerCase().replace(/ij/g, "y").replace(/[^a-zàáâäèéêëïíîóôöúûü]/g, "");
+  const g = w.match(VOWELS); return g ? g.length : 0;
+}
+// getallen worden uitgesproken als woorden: 7 = ze·ven, 21 = een·en·twin·tig
+const ONES = ["nul","een","twee","drie","vier","vijf","zes","zeven","acht","negen","tien","elf","twaalf","dertien","veertien","vijftien","zestien","zeventien","achttien","negentien"];
+const TENS = ["","","twintig","dertig","veertig","vijftig","zestig","zeventig","tachtig","negentig"];
+function numberWord(n){
+  if (n < 20) return ONES[n];
+  if (n < 100) { const t = TENS[Math.floor(n / 10)], u = n % 10; return u ? ONES[u] + (u === 2 || u === 3 ? "ën" : "en") + t : t; }
+  if (n < 1000) { const h = Math.floor(n / 100), r = n % 100; return (h > 1 ? ONES[h] : "") + "honderd" + (r ? numberWord(r) : ""); }
+  if (n < 1000000) { const k = Math.floor(n / 1000), r = n % 1000; return (k > 1 ? numberWord(k) : "") + "duizend" + (r ? numberWord(r) : ""); }
+  return "miljoen";
+}
+// afkortingen spreek je letter voor letter uit: tv = tee·vee, wc = wee·cee
+const LETTER_SYL = { y: 2, w: 1 };   // bijna elke lettername is één lettergreep (bee, cee, ef, ka...)
+function syllables(raw){
+  let w = raw.replace(/[.,!?;:"“”()]/g, "").replace(/['’]s$/i, "");
+  if (!w) return 0;
+  if (/^\d+$/.test(w)) return vowelGroups(numberWord(+w));
+  if (/^\d+%$/.test(w)) return vowelGroups(numberWord(parseInt(w))) + 2;            // pro·cent
+  if (/^[A-Z]{2,5}$/.test(w) || /^[bcdfghjklmnpqrstvwxz]{2,5}$/i.test(w))           // TV, cd, pc, wc, BBQ
+    return [...w.toLowerCase()].reduce((n, ch) => n + (LETTER_SYL[ch] || 1), 0);
+  return vowelGroups(w);
 }
 
-let rec = null, on = false, seen = 0;
+// ---------- luisteren ----------
+let rec = null, on = false, seen = 0, history = [], lastActivity = 0, restarts = 0, watchdog = null;
 function bonk(){ $("bonk").classList.add("show"); try{ navigator.vibrate && navigator.vibrate(200); }catch(e){} setTimeout(() => $("bonk").classList.remove("show"), 700); }
-function show(text){
-  const words = text.trim().split(/\s+/).filter(Boolean);
+function render(current){
   $("words").innerHTML = "";
-  words.forEach((w, i) => {
+  [...history.slice(-24), ...current].forEach(w => {
     const n = syllables(w), el = document.createElement("span");
     el.textContent = w + " · " + n; if (n > 1) el.className = "bad";
     $("words").appendChild(el);
-    if (i >= seen && n > 1) bonk();
   });
+}
+function onWords(words){
+  words.forEach((w, i) => { if (i >= seen && syllables(w) > 1) bonk(); });
   seen = Math.max(seen, words.length);
+  render(words);
+}
+function session(){
+  // iOS stopt de herkenning af en toe vanzelf: dan starten we een vers exemplaar en tellen we opnieuw vanaf nul
+  const r = new SR(); rec = r; seen = 0; let words = [];
+  r.lang = "nl-NL"; r.continuous = true; r.interimResults = true;
+  r.onstart = () => { lastActivity = Date.now(); $("status").textContent = "Luistert…" + (restarts ? ` (herstart ${restarts}×)` : ""); };
+  r.onresult = e => {
+    lastActivity = Date.now();
+    let t = ""; for (let i = 0; i < e.results.length; i++) t += e.results[i][0].transcript + " ";
+    words = t.trim().split(/\s+/).filter(Boolean); onWords(words);
+  };
+  r.onerror = e => { if (e.error !== "no-speech" && e.error !== "aborted") log("fout: " + e.error); if (e.error === "not-allowed" || e.error === "service-not-allowed") { on = false; stopUi("Geen toegang tot de microfoon."); } };
+  r.onend = () => {
+    if (rec !== r) return;
+    history.push(...words); words = [];
+    if (!on) return;
+    restarts++; setTimeout(() => { if (on && rec === r) { try { session(); } catch(err){ log("herstart mislukt: " + err.message); } } }, 120);
+  };
+  r.start();
 }
 function start(){
   if (!SR) { $("status").textContent = "Deze browser heeft geen spraakherkenning."; return; }
-  rec = new SR(); rec.lang = "nl-NL"; rec.continuous = true; rec.interimResults = true;
-  rec.onstart = () => { $("status").textContent = "Luistert…"; log("gestart"); };
-  rec.onerror = e => { $("status").textContent = "Fout: " + e.error; log("fout: " + e.error); };
-  rec.onend = () => { log("gestopt"); if (on) { try { rec.start(); } catch(e){ log("herstart mislukt: " + e.message); } } else $("status").textContent = "Gestopt."; };
-  rec.onresult = e => {
-    let t = ""; for (let i = 0; i < e.results.length; i++) t += e.results[i][0].transcript + " ";
-    show(t);
-  };
-  seen = 0; on = true; rec.start();
+  on = true; restarts = 0; history = []; session();
+  // waakhond: hangt de herkenning zonder 'end' te melden, dan zelf opnieuw starten
+  clearInterval(watchdog);
+  watchdog = setInterval(() => { if (on && Date.now() - lastActivity > 7000) { log("hing, opnieuw gestart"); const old = rec; rec = null; try { old.abort(); } catch(e){} restarts++; session(); } }, 1500);
   $("go").textContent = "Stop"; $("go").classList.add("on");
 }
-function stop(){ on = false; try { rec && rec.stop(); } catch(e){} $("go").textContent = "Start luisteren"; $("go").classList.remove("on"); }
+function stopUi(msg){ clearInterval(watchdog); $("go").textContent = "Start luisteren"; $("go").classList.remove("on"); $("status").textContent = msg; }
+function stop(){ on = false; try { rec && rec.stop(); } catch(e){} stopUi("Gestopt."); }
 $("go").onclick = () => on ? stop() : start();
 </script>
 </body>
