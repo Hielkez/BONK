@@ -542,6 +542,11 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 .wzPage > :first-child{margin-top:auto}
 .wzPage > :last-child{margin-bottom:auto}
 .sheet{-webkit-overflow-scrolling:touch}
+/* taalkeuze */
+.langSeg{align-self:center;display:inline-flex;gap:4px;padding:4px;border-radius:999px;background:var(--raise)}
+.langSeg button{padding:7px 14px;border-radius:999px;font-weight:700;font-size:14px;color:var(--muted)}
+.langSeg button[aria-pressed="true"]{background:var(--fg);color:var(--ink)}
+.langSeg2{grid-template-columns:1fr 1fr}
 /* iOS 26 heeft een bug (WebKit 301108): met een doorzichtige statusbalk ("black-translucent")
    wordt de app-pagina precies de statusbalkhoogte te kort en blijft onderin een lege strook die
    niets kan vullen. Daarom een gewone, ondoorzichtige statusbalk (zie meta-tag in de head). */
@@ -564,30 +569,30 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
   </header>
 
   <div class="meta">
-    <span><strong id="turnLabel">Team A</strong> is aan de beurt<span id="counter" hidden></span></span>
-    <span class="chip" id="krantChip" hidden>2 telefoons</span>
-    <button class="menuBtn" id="menuBtn" aria-label="Menu openen">
+    <span><strong id="turnLabel">Team A</strong> <span data-t="isUp">is aan de beurt</span><span id="counter" hidden></span></span>
+    <span class="chip" id="krantChip" hidden data-t="twoPhones">2 telefoons</span>
+    <button class="menuBtn" id="menuBtn" aria-label="Menu openen" data-ta="aria-label:openMenu">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>Menu
     </button>
   </div>
 
   <main class="stage" id="stage">
-    <button class="word easy" id="easyBtn" aria-label="Makkelijk woord geraden, plus 1">
-      <span class="wTag"><b>+1</b><span>Makkelijk</span></span>
+    <button class="word easy" id="easyBtn" aria-label="Makkelijk woord geraden, plus 1" data-ta="aria-label:easyAria">
+      <span class="wTag"><b>+1</b><span data-t="easy">Makkelijk</span></span>
       <span class="w" id="easyText">—</span>
-      <span class="tapHint">Tik als het geraden is</span>
+      <span class="tapHint" data-t="tapHint">Tik als het geraden is</span>
     </button>
-    <button class="word hard" id="hardBtn" aria-label="Moeilijk woord geraden, plus 3">
-      <span class="wTag"><b>+3</b><span>Moeilijk</span></span>
+    <button class="word hard" id="hardBtn" aria-label="Moeilijk woord geraden, plus 3" data-ta="aria-label:hardAria">
+      <span class="wTag"><b>+3</b><span data-t="hard">Moeilijk</span></span>
       <span class="w" id="hardText">—</span>
-      <span class="tapHint">Tik als het geraden is</span>
+      <span class="tapHint" data-t="tapHint">Tik als het geraden is</span>
     </button>
   </main>
 
   <footer class="actions">
-    <button class="act bad" id="minusBtn">BONK!<small>−1 punt</small></button>
-    <button class="act peek" id="peekBtn" hidden>Laat zien<small>4 tellen</small></button>
-    <button class="act" id="pauseBtn">Pauze<small>timer stil</small></button>
+    <button class="act bad" id="minusBtn">BONK!<small data-t="minus1">−1 punt</small></button>
+    <button class="act peek" id="peekBtn" hidden>Laat zien<small data-t="peekSmall">4 tellen</small></button>
+    <button class="act" id="pauseBtn"><span data-t="pause">Pauze</span><small data-t="pauseSmall">timer stil</small></button>
   </footer>
 </div>
 
@@ -604,26 +609,26 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
     <p class="gResult" id="gResult" hidden></p>
     <h1 class="gTeam turnOnly" id="gTeam">Team A</h1>
     <div class="scoreDuo">
-      <label class="sd a"><input class="tnInput" id="nameA" maxlength="16" placeholder="Team A" autocomplete="off" spellcheck="false" aria-label="Naam team A"><b id="gsA">0</b></label>
+      <label class="sd a"><input class="tnInput" id="nameA" maxlength="16" placeholder="Team A" autocomplete="off" spellcheck="false" aria-label="Naam team A" data-ta="aria-label:nameA"><b id="gsA">0</b></label>
       <div class="sdMid" id="gsTarget"></div>
-      <label class="sd b"><input class="tnInput" id="nameB" maxlength="16" placeholder="Team B" autocomplete="off" spellcheck="false" aria-label="Naam team B"><b id="gsB">0</b></label>
+      <label class="sd b"><input class="tnInput" id="nameB" maxlength="16" placeholder="Team B" autocomplete="off" spellcheck="false" aria-label="Naam team B" data-ta="aria-label:nameB"><b id="gsB">0</b></label>
     </div>
-    <button class="hideToggle" id="hideToggle" hidden aria-pressed="false"><span class="sw" aria-hidden="true"></span><span><b>Woorden verbergen</b><small>De rader houdt de telefoon vast en laat de uitlegger met “Laat zien” kort kijken.</small></span></button>
+    <button class="hideToggle" id="hideToggle" hidden aria-pressed="false"><span class="sw" aria-hidden="true"></span><span><b data-t="hideWords">Woorden verbergen</b><small data-t="hideSmall">De rader houdt de telefoon vast en laat de uitlegger met “Laat zien” kort kijken.</small></span></button>
     <button class="bigBtn" id="startBtn">Start</button>
     <p class="gHint homeOnly hostOnly" id="gateCodeLine" hidden></p>
     <div class="duo guestOnly" id="duoGuest">
       <div class="duoText"><b id="guestTitle">Verbonden</b><span id="guestStatus"></span></div>
-      <button class="ghost" id="guestRetry" hidden>Opnieuw</button><button class="ghost" id="leaveBtn">Verlaten</button>
+      <button class="ghost" id="guestRetry" hidden data-t="retry">Opnieuw</button><button class="ghost" id="leaveBtn" data-t="leave">Verlaten</button>
     </div>
-    <p class="note err" id="verNote" hidden>De andere telefoon heeft een andere versie van BONK. Herlaad de site op beide telefoons.</p>
+    <p class="note err" id="verNote" hidden data-t="verNote">De andere telefoon heeft een andere versie van BONK. Herlaad de site op beide telefoons.</p>
     <div class="ghostRow homeOnly">
-      <button class="ghost hostOnly" id="gateBackBtn">← Terug</button>
-      <button class="ghost" id="gateRulesBtn">Spelregels</button>
+      <button class="ghost hostOnly" id="gateBackBtn" data-t="back">← Terug</button>
+      <button class="ghost" id="gateRulesBtn" data-t="rules">Spelregels</button>
     </div>
     <div class="installBar homeOnly" id="installBar" hidden>
-      <span id="installText">Speel BONK als app: schermvullend en met een eigen icoon.</span>
-      <button class="installBtn" id="installBtn">Installeren</button>
-      <button class="installX" id="installClose" aria-label="Verbergen">✕</button>
+      <span id="installText" data-t="installText">Speel BONK als app: schermvullend en met een eigen icoon.</span>
+      <button class="installBtn" id="installBtn" data-t="install">Installeren</button>
+      <button class="installX" id="installClose" aria-label="Verbergen" data-ta="aria-label:hideAria">✕</button>
     </div>
     <p class="ver homeOnly" data-ver></p>
   </div>
@@ -633,19 +638,20 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 <section class="overlay" id="lobby" hidden>
   <div class="gateInner lobbyInner">
     <p class="logo big">BONK<span>!</span></p>
-    <p class="tagline">Omschrijf het woord met alleen woorden van één lettergreep. Fout? BONK!</p>
+    <p class="tagline" data-t="tagline">Omschrijf het woord met alleen woorden van één lettergreep. Fout? BONK!</p>
     <div class="choices">
       <button class="choice make" id="lobbyNew">
         <span class="chIcon" aria-hidden="true">+</span>
-        <span class="chText"><b>Spel maken</b><small>Deze telefoon maakt het spel. Het andere team doet mee met een code.</small></span>
+        <span class="chText"><b data-t="make">Spel maken</b><small data-t="makeSmall">Deze telefoon maakt het spel. Het andere team doet mee met een code.</small></span>
       </button>
       <button class="choice join" id="lobbyJoin">
         <span class="chIcon" aria-hidden="true">→</span>
-        <span class="chText"><b>Meedoen</b><small>Het andere team heeft al een spel gemaakt? Vul hun code in.</small></span>
+        <span class="chText"><b data-t="join">Meedoen</b><small data-t="joinSmall">Het andere team heeft al een spel gemaakt? Vul hun code in.</small></span>
       </button>
     </div>
-    <button class="ghost" id="lobbyResume" hidden>Verder met vorig spel</button>
-    <div class="ghostRow"><button class="ghost" id="lobbyRules">Spelregels</button></div>
+    <button class="ghost" id="lobbyResume" hidden data-t="resumeGame">Verder met vorig spel</button>
+    <div class="ghostRow"><button class="ghost" id="lobbyRules" data-t="rules">Spelregels</button></div>
+    <div class="langSeg" role="group" aria-label="Taal / Language"><button data-lang="nl">Nederlands</button><button data-lang="en">English</button></div>
     <p class="ver" data-ver></p>
   </div>
 </section>
@@ -654,62 +660,62 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 <section class="overlay" id="wizard" hidden>
   <div class="wzInner">
     <div class="wzTop">
-      <button class="iconBtn" id="wzBack" aria-label="Terug"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <button class="iconBtn" id="wzBack" aria-label="Terug" data-ta="aria-label:backAria"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
       <div class="wzDots" id="wzDots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
       <span class="wzCount" id="wzCount">1 / 5</span>
     </div>
     <div class="wzViewport">
       <div class="wzPage" data-step="1">
-        <p class="wzKicker">Stap 1</p>
+        <p class="wzKicker" data-t="step1">Stap 1</p>
         <h2 class="wzTitle" id="wzNameTitle">Hoe heten de teams?</h2>
-        <div class="wzMode" role="group" aria-label="Met hoeveel spelen jullie?">
-          <button data-duo="0" aria-pressed="true"><b>Twee teams</b><small>Je legt uit aan je teamgenoten</small></button>
-          <button data-duo="1" aria-pressed="false"><b>Met z’n tweeën</b><small>Jij legt uit, de ander raadt en BONKt</small></button>
+        <div class="wzMode" role="group" aria-label="Met hoeveel spelen jullie?" data-ta="aria-label:modeAria">
+          <button data-duo="0" aria-pressed="true"><b data-t="twoTeams">Twee teams</b><small data-t="twoTeamsSmall">Je legt uit aan je teamgenoten</small></button>
+          <button data-duo="1" aria-pressed="false"><b data-t="duo">Met z’n tweeën</b><small data-t="duoSmall">Jij legt uit, de ander raadt en BONKt</small></button>
         </div>
-        <label class="wzName a"><i></i><input id="wzNameA" maxlength="16" placeholder="Team A" autocomplete="off" spellcheck="false" aria-label="Naam team A"></label>
-        <p class="wzVs">tegen</p>
-        <label class="wzName b"><i></i><input id="wzNameB" maxlength="16" placeholder="Team B" autocomplete="off" spellcheck="false" aria-label="Naam team B"></label>
-        <p class="wzHint">Geen zin in namen? Tik gewoon op Volgende.</p>
+        <label class="wzName a"><i></i><input id="wzNameA" maxlength="16" placeholder="Team A" autocomplete="off" spellcheck="false" aria-label="Naam team A" data-ta="aria-label:nameA"></label>
+        <p class="wzVs" data-t="vs">tegen</p>
+        <label class="wzName b"><i></i><input id="wzNameB" maxlength="16" placeholder="Team B" autocomplete="off" spellcheck="false" aria-label="Naam team B" data-ta="aria-label:nameB"></label>
+        <p class="wzHint" data-t="noNames">Geen zin in namen? Tik gewoon op Volgende.</p>
       </div>
       <div class="wzPage" data-step="2">
-        <p class="wzKicker">Stap 2</p>
-        <h2 class="wzTitle">Tot hoeveel punten spelen jullie?</h2>
+        <p class="wzKicker" data-t="step2">Stap 2</p>
+        <h2 class="wzTitle" data-t="goalQ">Tot hoeveel punten spelen jullie?</h2>
         <div class="wzChoices">
-          <button class="wzChoice" data-t="15"><b>15</b><small>Kort potje</small></button>
-          <button class="wzChoice" data-t="30"><b>30</b><small>Normaal</small></button>
-          <button class="wzChoice" data-t="50"><b>50</b><small>Lang potje</small></button>
-          <button class="wzChoice" data-t="0"><b>∞</b><small>Geen einde</small></button>
+          <button class="wzChoice" data-t="15"><b>15</b><small data-t="short">Kort potje</small></button>
+          <button class="wzChoice" data-t="30"><b>30</b><small data-t="normal">Normaal</small></button>
+          <button class="wzChoice" data-t="50"><b>50</b><small data-t="long">Lang potje</small></button>
+          <button class="wzChoice" data-t="0"><b>∞</b><small data-t="noEnd">Geen einde</small></button>
         </div>
       </div>
       <div class="wzPage" data-step="3">
-        <p class="wzKicker">Stap 3</p>
-        <h2 class="wzTitle">Hoe lang duurt een beurt?</h2>
+        <p class="wzKicker" data-t="step3">Stap 3</p>
+        <h2 class="wzTitle" data-t="durQ">Hoe lang duurt een beurt?</h2>
         <div class="wzChoices durs">
-          <button class="wzChoice dur" data-dur="30"><span class="pie" style="--f:.5"></span><b>30</b><small>sec</small><em>Snel</em></button>
-          <button class="wzChoice dur" data-dur="45"><span class="pie" style="--f:.75"></span><b>45</b><small>sec</small><em>Normaal</em></button>
-          <button class="wzChoice dur" data-dur="60"><span class="pie" style="--f:1"></span><b>60</b><small>sec</small><em>Rustig</em></button>
+          <button class="wzChoice dur" data-dur="30"><span class="pie" style="--f:.5"></span><b>30</b><small>sec</small><em data-t="fast">Snel</em></button>
+          <button class="wzChoice dur" data-dur="45"><span class="pie" style="--f:.75"></span><b>45</b><small>sec</small><em data-t="normal">Normaal</em></button>
+          <button class="wzChoice dur" data-dur="60"><span class="pie" style="--f:1"></span><b>60</b><small>sec</small><em data-t="slow">Rustig</em></button>
         </div>
       </div>
       <div class="wzPage" data-step="4">
-        <p class="wzKicker">Stap 4 · mag ook overslaan</p>
-        <h2 class="wzTitle">Speelt het andere team op een eigen telefoon?</h2>
-        <p class="wzHint">Laat ze BONK openen, op <b>Meedoen</b> tikken en deze code invullen. Of de QR-code scannen.</p>
+        <p class="wzKicker" data-t="step4">Stap 4 · mag ook overslaan</p>
+        <h2 class="wzTitle" data-t="phoneQ">Speelt het andere team op een eigen telefoon?</h2>
+        <p class="wzHint" data-t="phoneHint">Laat ze BONK openen, op <b>Meedoen</b> tikken en deze code invullen. Of de QR-code scannen.</p>
     <div class="duo wzDuo" id="duoHost">
         <!-- spelcode voor het andere team -->
         <div class="duoText">
                   <span id="duoStatus">Het andere team opent BONK en tikt op <i>Meedoen</i> met deze code.</span>
         </div>
         <div class="duoCode"><div class="qrMini" id="qrMini"></div><span class="code small" id="duoCode">····</span></div>
-        <div class="setRow duoMine" id="duoMine" hidden><span>Deze telefoon is van</span>
+        <div class="setRow duoMine" id="duoMine" hidden><span data-t="phoneOf">Deze telefoon is van</span>
           <div class="seg mySeg"><button data-my="A" id="myA">Team A</button><button data-my="B" id="myB">Team B</button></div>
         </div>
       </div>
         </div>
       <div class="wzPage" data-step="5">
-        <p class="wzKicker">Klaar!</p>
-        <h2 class="wzTitle">Zin in?</h2>
+        <p class="wzKicker" data-t="doneKicker">Klaar!</p>
+        <h2 class="wzTitle" data-t="doneTitle">Zin in?</h2>
         <ul class="wzSum" id="wzSum"></ul>
-        <button class="hideToggle" id="hideToggle2" hidden aria-pressed="false"><span class="sw" aria-hidden="true"></span><span><b>Woorden verbergen</b><small>De rader houdt de telefoon vast en laat de uitlegger met “Laat zien” kort kijken.</small></span></button>
+        <button class="hideToggle" id="hideToggle2" hidden aria-pressed="false"><span class="sw" aria-hidden="true"></span><span><b data-t="hideWords">Woorden verbergen</b><small data-t="hideSmall">De rader houdt de telefoon vast en laat de uitlegger met “Laat zien” kort kijken.</small></span></button>
       </div>
     </div>
     <button class="bigBtn" id="wzNext">Volgende</button>
@@ -720,10 +726,10 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 <section class="overlay" id="winOv" data-team="A" hidden>
   <div class="gateInner" style="text-align:center">
     <p class="brand">BONK<span>!</span></p>
-    <p class="gTitle">Winnaar</p>
+    <p class="gTitle" data-t="winner">Winnaar</p>
     <h1 class="gTeam" id="winTeam">Team A</h1>
     <p class="gResult" id="winText"></p>
-    <button class="bigBtn" id="newGameBtn">Nieuw spel</button>
+    <button class="bigBtn" id="newGameBtn" data-t="newGame">Nieuw spel</button>
     <button class="ghost" id="winMenuBtn">Menu</button>
   </div>
 </section>
@@ -731,12 +737,12 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 <!-- Pauze -->
 <section class="overlay" id="pauseOv" hidden>
   <div class="pauseInner">
-    <p class="gTitle">Timer staat stil</p>
-    <h2 class="gTeam">Pauze</h2>
-    <p class="gHint">De woorden zijn verborgen zolang het spel gepauzeerd is.</p>
+    <p class="gTitle" data-t="timerStill">Timer staat stil</p>
+    <h2 class="gTeam" data-t="pause">Pauze</h2>
+    <p class="gHint" data-t="pauseHint">De woorden zijn verborgen zolang het spel gepauzeerd is.</p>
     <div class="btnRow">
-      <button class="secBtn" id="stopBtn">Beurt stoppen</button>
-      <button class="bigBtn" id="resumeBtn" style="background:var(--good)">Verder</button>
+      <button class="secBtn" id="stopBtn" data-t="stopTurn">Beurt stoppen</button>
+      <button class="bigBtn" id="resumeBtn" style="background:var(--good)" data-t="resume">Verder</button>
     </div>
   </div>
 </section>
@@ -744,70 +750,76 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 <!-- Spelregels -->
 <div class="sheetWrap rulesWrap" id="rules" hidden>
   <div class="sheet rulesSheet" role="dialog" aria-modal="true" aria-labelledby="rulesTitle">
-    <div class="sheetHead"><h2 id="rulesTitle" class="rulesLogo">Zo werkt <span>BONK!</span></h2><button class="close" id="closeRules" aria-label="Sluiten">✕</button></div>
+    <div class="sheetHead"><h2 id="rulesTitle" class="rulesLogo" data-t="rulesTitle">Zo werkt <span>BONK!</span></h2><button class="close" id="closeRules" aria-label="Sluiten" data-ta="aria-label:close">✕</button></div>
 
     <section class="rp rp2">
       <span class="rpNum" aria-hidden="true">1</span>
-      <p class="rpLead">Twee teams. Om de beurt legt één speler woorden uit aan zijn eigen team.</p>
-      <p class="rpNote">Je hebt 30 tot 60 seconden. Hoe meer woorden je team raadt, hoe meer punten. Wissel elke beurt van uitlegger.</p>
-      <p class="rpNote">Met z’n tweeën? Dan leg je uit aan je tegenstander. Die raadt én let op je fouten.</p>
+      <p class="rpLead" data-t="r1Lead">Twee teams. Om de beurt legt één speler woorden uit aan zijn eigen team.</p>
+      <p class="rpNote" data-t="r1Note">Je hebt 30 tot 60 seconden. Hoe meer woorden je team raadt, hoe meer punten. Wissel elke beurt van uitlegger.</p>
+      <p class="rpNote" data-t="r1Duo">Met z’n tweeën? Dan leg je uit aan je tegenstander. Die raadt én let op je fouten.</p>
     </section>
 
     <section class="rp rp1">
       <span class="rpNum" aria-hidden="true">2</span>
-      <p class="rpLead">Elke kaart heeft een makkelijk en een moeilijk woord <mark>die bij elkaar horen.</mark></p>
+      <p class="rpLead" data-t="r2Lead">Elke kaart heeft een makkelijk en een moeilijk woord <mark>die bij elkaar horen.</mark></p>
       <div class="cardPair">
-        <div class="miniCard"><i class="p1">+1</i><b>Strand</b></div>
-        <div class="miniCard hard"><i class="p3">+3</i><b>Zandkasteel</b></div>
+        <div class="miniCard"><i class="p1">+1</i><b data-t="r2Easy">Strand</b></div>
+        <div class="miniCard hard"><i class="p3">+3</i><b data-t="r2Hard">Zandkasteel</b></div>
       </div>
-      <p class="rpNote">Je kunt het makkelijke woord gebruiken als opstapje naar het moeilijke. Per kaart telt maar één woord: tik op het woord dat geraden is en je krijgt meteen een nieuwe kaart. Overslaan kan niet.</p>
+      <p class="rpNote" data-t="r2Note">Je kunt het makkelijke woord gebruiken als opstapje naar het moeilijke. Per kaart telt maar één woord: tik op het woord dat geraden is en je krijgt meteen een nieuwe kaart. Overslaan kan niet.</p>
     </section>
 
     <section class="rp rp2">
       <span class="rpNum" aria-hidden="true">3</span>
-      <p class="rpLead">Uitleggen mag alleen met woorden van één lettergreep.</p>
+      <p class="rpLead" data-t="r3Lead">Uitleggen mag alleen met woorden van één lettergreep.</p>
       <div class="demo">
-        <div class="miniCard"><small>Makkelijk</small><b>Fiets</b></div>
-        <div class="said"><span>twee</span><span>wiel</span><span>trap</span><span>bel</span></div>
+        <div class="miniCard"><small data-t="easy">Makkelijk</small><b data-t="r3Word">Fiets</b></div>
+        <div class="said" data-t="r3Said"><span>twee</span><span>wiel</span><span>trap</span><span>bel</span></div>
       </div>
-      <p class="rpNote">Het woord zelf of een stuk ervan zeggen mag nooit.</p>
+      <p class="rpNote" data-t="r3Note">Het woord zelf of een stuk ervan zeggen mag nooit.</p>
     </section>
 
     <section class="rp rp3">
       <span class="rpNum" aria-hidden="true">4</span>
-      <div class="bonkDemo"><span class="oops">“fiet·sen·rek”</span><span class="burstMini">BONK!</span></div>
-      <p class="rpLead">Fout? De tegenpartij roept BONK! Dat kost een punt en je krijgt een nieuwe kaart.</p>
-      <p class="rpNote">Fout is: een woord van twee of meer lettergrepen, of (een stuk van) het woord op de kaart zeggen.</p>
+      <div class="bonkDemo"><span class="oops" data-t="r4Oops">“fiet·sen·rek”</span><span class="burstMini">BONK!</span></div>
+      <p class="rpLead" data-t="r4Lead">Fout? De tegenpartij roept BONK! Dat kost een punt en je krijgt een nieuwe kaart.</p>
+      <p class="rpNote" data-t="r4Note">Fout is: een woord van twee of meer lettergrepen, of (een stuk van) het woord op de kaart zeggen.</p>
     </section>
 
     <section class="rp rp4">
       <span class="rpNum" aria-hidden="true">5</span>
-      <p class="rpLead">Tijd op? Dan is het andere team aan de beurt.</p>
-      <p class="rpNote">Doel gehaald? Speel je beurt gewoon uit, elk punt telt. Daarna krijgt het andere team nog één volle beurt om je in te halen. Wie na die ronde de meeste punten heeft, wint.</p>
+      <p class="rpLead" data-t="r5Lead">Tijd op? Dan is het andere team aan de beurt.</p>
+      <p class="rpNote" data-t="r5Note">Doel gehaald? Speel je beurt gewoon uit, elk punt telt. Daarna krijgt het andere team nog één volle beurt om je in te halen. Wie na die ronde de meeste punten heeft, wint.</p>
     </section>
 
-    <p class="rpFoot">Opgerolde krant erbij om echt te bonken? Mag. Wel zacht.</p>
-    <button class="bigBtn" id="rulesOkBtn" style="background:var(--a)">Begrepen</button>
+    <p class="rpFoot" data-t="rFoot">Opgerolde krant erbij om echt te bonken? Mag. Wel zacht.</p>
+    <button class="bigBtn" id="rulesOkBtn" style="background:var(--a)" data-t="gotIt">Begrepen</button>
   </div>
 </div>
 
 <!-- Menu -->
 <div class="sheetWrap" id="menu" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="menuTitle">
-    <div class="sheetHead"><h2 id="menuTitle">Menu</h2><button class="close" id="closeMenu" aria-label="Sluiten">✕</button></div>
+    <div class="sheetHead"><h2 id="menuTitle">Menu</h2><button class="close" id="closeMenu" aria-label="Sluiten" data-ta="aria-label:close">✕</button></div>
 
     <div class="sec guestOnly">
-      <p class="note">Instellingen en punten regel je op de telefoon die het spel heeft gemaakt.</p>
-      <button class="secBtn" id="menuLeaveBtn">Spel verlaten</button>
+      <p class="note" data-t="guestMenuNote">Instellingen en punten regel je op de telefoon die het spel heeft gemaakt.</p>
+      <button class="secBtn" id="menuLeaveBtn" data-t="leaveGame">Spel verlaten</button>
     </div>
 
     <div class="list">
-      <button class="secBtn" id="menuRulesBtn">Spelregels</button>
-      <button class="secBtn danger hostOnly" id="resetAllBtn">Nieuw spel</button>
+      <button class="secBtn" id="menuRulesBtn" data-t="rules">Spelregels</button>
+      <button class="secBtn danger hostOnly" id="resetAllBtn" data-t="newGame">Nieuw spel</button>
     </div>
 
     <div class="sec hostOnly">
-      <h3>Puntenstapel</h3>
+      <h3>Taal · Language</h3>
+      <div class="seg langSeg2" role="group" aria-label="Taal / Language"><button data-lang="nl">Nederlands</button><button data-lang="en">English</button></div>
+      <p class="note" data-t="langNote">Ook de kaarten wisselen mee. Kan niet tijdens een beurt.</p>
+    </div>
+
+    <div class="sec hostOnly">
+      <h3 data-t="log">Puntenstapel</h3>
       <ul class="log" id="log"></ul>
     </div>
     <p class="ver" data-ver></p>
@@ -815,10 +827,10 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 </div>
 
 <div class="toast" id="toast" aria-live="polite"></div>
-<div class="updBar" id="updBar" hidden><span>Nieuwe versie van BONK</span><button id="updBtn">Verversen</button></div>
+<div class="updBar" id="updBar" hidden><span data-t="newVersion">Nieuwe versie van BONK</span><button id="updBtn" data-t="refresh">Verversen</button></div>
 <div class="hurry" id="hurry" aria-hidden="true"></div>
 <div class="countOv" id="countOv" hidden><div class="countRing" id="countRing"><svg viewBox="0 0 100 100" aria-hidden="true"><circle class="track" cx="50" cy="50" r="45"/><circle class="prog" cx="50" cy="50" r="45"/></svg><span id="countNum">3</span></div><p class="countSub" id="countSub"></p></div>
-<div class="stamp" id="stamp" hidden><span>TIJD!</span></div>
+<div class="stamp" id="stamp" hidden><span data-t="timeStamp">TIJD!</span></div>
 
 <div class="bonkFx" id="bonkFx" aria-hidden="true">
   <div class="flash"></div>
@@ -830,40 +842,40 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 <section class="overlay" id="joinOv" hidden>
   <div class="krantInner">
     <p class="brand">BONK<span>!</span></p>
-    <h2 class="gTeam" style="font-size:clamp(34px,10vw,48px);color:var(--b)">Meedoen</h2>
-    <p class="gHint">Typ de code die op het startscherm van de andere telefoon staat, of scan daar de QR-code. Deze telefoon wordt dan de telefoon van jullie team.</p>
-    <label class="codeLabel" for="joinCode">Typ hier de code van 4 tekens</label>
+    <h2 class="gTeam" style="font-size:clamp(34px,10vw,48px);color:var(--b)" data-t="join">Meedoen</h2>
+    <p class="gHint" data-t="joinHint">Typ de code die op het startscherm van de andere telefoon staat, of scan daar de QR-code. Deze telefoon wordt dan de telefoon van jullie team.</p>
+    <label class="codeLabel" for="joinCode" data-t="codeLabel">Typ hier de code van 4 tekens</label>
     <input id="joinCode" class="codeInput" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="4" placeholder="– – – –">
-    <button class="bigBtn" id="joinGo" style="background:var(--b);width:100%">Verbinden</button>
+    <button class="bigBtn" id="joinGo" style="background:var(--b);width:100%" data-t="connect">Verbinden</button>
     <p class="note err" id="joinMsg" hidden></p>
-    <button class="ghost" id="joinCancel">Annuleren</button>
+    <button class="ghost" id="joinCancel" data-t="cancel">Annuleren</button>
   </div>
 </section>
 
 <!-- Krant-telefoon -->
 <section class="overlay" id="krantOv" hidden>
   <div class="krantInner" id="krantInner">
-    <div class="kScore" aria-label="Stand">
+    <div class="kScore" aria-label="Stand" data-ta="aria-label:scoreAria">
       <div class="kTeam a" id="kTeamA"><span id="kNameA">Team A</span><b id="kScoreA">0</b></div>
       <div class="kTeam b" id="kTeamB"><span id="kNameB">Team B</span><b id="kScoreB">0</b></div>
       <p class="kGoal" id="kGoal">Spel tot 30 punten</p>
     </div>
-    <p class="kStatus" id="kStatus">Wachten…</p>
+    <p class="kStatus" id="kStatus" data-t="waiting">Wachten…</p>
     <div class="kBar" id="kBar" hidden><div class="kFill" id="kFill"></div><span id="kSecs">90</span></div>
     <div class="kWords" id="kWords">
-      <div><span>Makkelijk</span><b id="kEasy">—</b></div>
-      <div><span>Moeilijk</span><b id="kHard">—</b></div>
+      <div><span data-t="easy">Makkelijk</span><b id="kEasy">—</b></div>
+      <div><span data-t="hard">Moeilijk</span><b id="kHard">—</b></div>
     </div>
-    <p class="kGuess" id="kGuess" hidden>Raad het woord!</p>
+    <p class="kGuess" id="kGuess" hidden data-t="guess">Raad het woord!</p>
     <button class="bonkBtn" id="bonkBtn" disabled>BONK!</button>
     <p class="gHint" id="kHint">Zegt de omschrijver een woord van meer dan één lettergreep? Tik op BONK. Zij krijgen dan −1.</p>
-    <button class="secBtn" id="krantRetry" hidden style="padding-inline:20px">Opnieuw verbinden</button>
+    <button class="secBtn" id="krantRetry" hidden style="padding-inline:20px" data-t="reconnect">Opnieuw verbinden</button>
   </div>
 </section>
 
 <script>
 (function(){
-const VERSION = "v46 · 15 nov 17:30";
+const VERSION = "v47 · 15 nov 17:50";
 document.querySelectorAll("[data-ver]").forEach(el => el.textContent = "BONK " + VERSION);
 
 const DEFAULT_CARDS = [
@@ -878,12 +890,25 @@ const DEFAULT_CARDS = [
   ["Ei","Paasei"],["Koning","Koningsdag"],["Brug","Sluis"],["Boot","Vuurtoren"],
   ["Klok","Zomertijd"],["Pannenkoek","Stroop"],["Oma","Breinaald"],["Fluit","Scheidsrechter"]
 ].map(([easy,hard])=>({easy,hard}));
+// reservekaarten als words-en.json (nog) niet geladen is
+const DEFAULT_CARDS_EN = [
+  ["Beach","Sandcastle"],["Bike","Flat tyre"],["Moon","Werewolf"],["Dog","Veterinarian"],["Sheep","Insomnia"],
+  ["Bear","Hibernation"],["Milk","Lactose intolerant"],["Apple","Gravity"],["Ice cream","Brain freeze"],["Coffee","Caffeine"],
+  ["Movie","Spoiler"],["Homework","Procrastination"],["Plane","Turbulence"],["Holiday","Jet lag"],["Elevator","Awkward silence"],
+  ["Weather","Small talk"],["Clock","Daylight saving time"],["Lamp","Genie"],["Kiss","Mistletoe"],["Toddler","Tantrum"]
+].map(([easy,hard])=>({easy,hard}));
 
 const KEY = "woordspel-v1";
-let base = (Array.isArray(window.CARDS) && window.CARDS.length) ? window.CARDS : DEFAULT_CARDS;
+let base = DEFAULT_CARDS;
 const S = { cards:[], idx:0, team:"A", score:{A:0,B:0}, dur:60, turnPts:0, log:[], custom:null, target:30, deckVer:0, names:{A:"",B:""}, turns:{A:0,B:0} };
 
 try { const d = JSON.parse(localStorage.getItem(KEY) || "null"); if (d && typeof d === "object") Object.assign(S, d); } catch(e){}
+// taal van het spel; elke taal heeft een eigen kaartenstapel (de andere wordt bewaard in S.decks)
+S.lang = S.lang === "en" ? "en" : "nl";
+if (!S.decks || typeof S.decks !== "object") S.decks = {};
+const DECK_FILE = { nl:"words.json", en:"words-en.json" };
+const FALLBACK = { nl:DEFAULT_CARDS, en:DEFAULT_CARDS_EN };
+base = FALLBACK[S.lang];
 const save = () => { if (role === "guest") return; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} };
 const source = () => (S.custom && S.custom.length) ? S.custom : base;
 // volgende kaart; is de hele stapel gespeeld, dan pas opnieuw schudden (zo komt niets terug voor alles geweest is)
@@ -900,7 +925,141 @@ if (!S.turns || typeof S.turns !== "object") S.turns = { A:0, B:0 };
 if (![0,15,30,50].includes(S.target)) S.target = 30;
 if (!S.names || typeof S.names !== "object") S.names = {A:"", B:""};
 S.duo = !!S.duo; S.hideWords = !!S.hideWords;
-const tn = t => (S.names[t] || "").trim() || (S.duo ? `Speler ${t === "A" ? 1 : 2}` : `Team ${t}`);
+/* ---------- taal: Nederlands (standaard) of Engels ----------
+   Vaste teksten in de HTML hebben data-t (inhoud) of data-ta="attribuut:sleutel"; de Nederlandse tekst staat in de HTML zelf.
+   Teksten die de code maakt staan in TX. Met twee telefoons volgt de gast de taal van de spel-telefoon. */
+const EN = {
+  isUp:"is up", openMenu:"Open menu", easyAria:"Easy word guessed, plus 1", hardAria:"Hard word guessed, plus 3",
+  easy:"Easy", hard:"Hard", tapHint:"Tap when it’s guessed", minus1:"−1 point", peekSmall:"4 seconds",
+  pause:"Pause", pauseSmall:"timer stops", nameA:"Name team A", nameB:"Name team B", retry:"Retry", leave:"Leave",
+  verNote:"The other phone runs a different version of BONK. Reload the site on both phones.",
+  back:"← Back", rules:"How to play", installText:"Play BONK as an app: full screen, with its own icon.", install:"Install", hideAria:"Hide",
+  hideWords:"Hide the words", hideSmall:"The guesser holds the phone and lets the explainer take a quick look with “Show”.",
+  tagline:"Describe the word using only words of one syllable. Slip up? BONK!",
+  make:"New game", makeSmall:"This phone hosts the game. The other team joins with a code.",
+  join:"Join", joinSmall:"The other team already started a game? Enter their code.", resumeGame:"Continue last game",
+  backAria:"Back", step1:"Step 1", modeAria:"How many players?", twoTeams:"Two teams", twoTeamsSmall:"You explain to your teammates",
+  duo:"Just the two of us", duoSmall:"You explain, the other guesses and BONKs", vs:"vs", noNames:"Can’t be bothered with names? Just tap Next.",
+  step2:"Step 2", goalQ:"How many points to win?", short:"Quick game", normal:"Normal", long:"Long game", noEnd:"No end",
+  step3:"Step 3", durQ:"How long is a turn?", fast:"Fast", slow:"Relaxed",
+  step4:"Step 4 · optional", phoneQ:"Is the other team playing on their own phone?",
+  phoneHint:"Have them open BONK, tap <b>Join</b> and enter this code. Or scan the QR code.",
+  phoneOf:"This phone belongs to", doneKicker:"All set!", doneTitle:"Ready?",
+  winner:"Winner", newGame:"New game", timerStill:"Timer stopped", pauseHint:"The words are hidden while the game is paused.",
+  stopTurn:"End turn", resume:"Continue", close:"Close",
+  guestMenuNote:"Settings and points are handled on the phone that started the game.", leaveGame:"Leave game",
+  langNote:"The cards switch too. Not possible during a turn.", log:"Score log", newVersion:"New version of BONK", refresh:"Refresh",
+  timeStamp:"TIME!", twoPhones:"2 phones", joinHint:"Type the code shown on the start screen of the other phone, or scan the QR code there. This phone becomes your team’s phone.",
+  codeLabel:"Type the 4-character code here", connect:"Connect", cancel:"Cancel", scoreAria:"Score", waiting:"Waiting…",
+  guess:"Guess the word!", reconnect:"Reconnect",
+  rulesTitle:"How <span>BONK!</span> works",
+  r1Lead:"Two teams. Each turn, one player explains words to their own team.",
+  r1Note:"You get 30 to 60 seconds. The more words your team guesses, the more points. Take turns being the explainer.",
+  r1Duo:"Just the two of you? Then you explain to your opponent, who guesses and watches out for your slip-ups.",
+  r2Lead:"Each card has an easy word and a hard word <mark>that go together.</mark>",
+  r2Easy:"Beach", r2Hard:"Sandcastle",
+  r2Note:"You can use the easy word as a stepping stone to the hard one. Only one word counts per card: tap the word that was guessed and you get a new card right away. No skipping.",
+  r3Lead:"You may only explain with words of one syllable.", r3Word:"Bike",
+  r3Said:"<span>two</span><span>wheels</span><span>ride</span><span>bell</span>",
+  r3Note:"Never say the word itself, or part of it.",
+  r4Oops:"“bi·cy·cle”", r4Lead:"Slip up? The other team shouts BONK! That costs a point and you get a new card.",
+  r4Note:"A slip-up is: a word of two or more syllables, or saying (part of) the word on the card.",
+  r5Lead:"Time’s up? Then it’s the other team’s turn.",
+  r5Note:"Reached the goal? Finish your turn, every point counts. Then the other team gets one more full turn to catch up. Whoever has the most points after that round wins.",
+  rFoot:"A rolled-up newspaper to really bonk with? Allowed. Gently, though.", gotIt:"Got it"
+};
+const NL = {};
+const pl = (n, one, more) => Math.abs(n) === 1 ? one : more;
+const TX = {
+  nl: {
+    player: n => `Speler ${n}`, team: t => `Team ${t}`, card: (i, n) => `kaart ${i} / ${n}`,
+    kHintDuo: "Jij raadt. Zegt je tegenstander een woord van meer dan één lettergreep, of (een stuk van) het woord zelf? Tik op BONK: dat kost hem een punt.",
+    kHint: "Zegt de omschrijver een woord van meer dan één lettergreep? Tik op BONK. Zij krijgen dan −1.",
+    goal: n => `Spel tot ${n} punten`, noGoal: "Spel zonder eindstand", upTo: n => `tot ${n}`,
+    waitGame: "Wachten op het spel…", waitStart: n => `Wachten tot ${n} start`, startTurn: s => `Start beurt · ${s} s`,
+    cont: n => `Verder · ${n}`, begins: n => `Start · ${n} begint`,
+    tie: " Gelijkspel! Er komt nog een ronde.",
+    lastTurn: (n, need) => ` <b>${n}</b> krijgt nog één laatste beurt en moet ${need} ${pl(need, "punt", "punten")} halen om te winnen.`,
+    goalHit: "Doel gehaald!", stopped: "Beurt gestopt · volgende", timeUp: "Tijd is op! · volgende",
+    turnPts: (n, pts) => `${n} haalde <b>${fmt(pts)}</b> ${pl(pts, "punt", "punten")} deze beurt.`,
+    hide: "Verberg", show: "Laat zien",
+    noPoints: "Nog geen punten. Start een beurt om te beginnen.", logStart: n => `Start beurt ${n}`, tapAgain: "Tik nogmaals",
+    ready: "Klaar om te spelen?", again: "Verder spelen", join: "Meedoen", newGame: "Nieuw spel",
+    nolib: "Kon de verbindingsdienst niet laden. Check je internet en herlaad de pagina.",
+    noconf: "Twee telefoons is nog niet ingesteld. Je kunt wel met één telefoon spelen.",
+    wins: (a, b) => `wint met <b>${a}</b> tegen <b>${b}</b>`,
+    cdHere: n => `${n}: omschrijver pakt de telefoon`, cdThere: n => `${n} is aan de beurt. Let goed op!`,
+    lost: "Verbinding kwijt. Opnieuw verbinden…", getsReady: n => `${n} maakt zich klaar…`, paused: "Pauze",
+    bonkNext: "BONK! Volgend woord komt eraan…", describes: n => `${n} omschrijft`,
+    codeLine: c => `Andere telefoon? Spelcode <b>${c}</b>`, thisPhone: n => `Deze telefoon: ${n}`,
+    connecting: c => `Verbinden met spel ${c}…`, patience: "Even geduld…",
+    connected: c => `Verbonden met spel ${c}. Instellingen en kaarten regel je op de andere telefoon.`,
+    linkedOk: n => `<span class="ok">✓ Verbonden!</span> ${n} speelt op de andere telefoon.`,
+    waitPhone: `<span class="waitDot"></span>Wachten op de andere telefoon…`, getCode: "Spelcode ophalen…",
+    noCode: "Kon geen spelcode maken. Herlaad de pagina.",
+    noGame: c => `Geen spel gevonden met code ${c}. Check de code op de andere telefoon.`,
+    noServer: "Geen verbinding met de server. Check je internet.",
+    code4: "De code heeft 4 tekens.", ownCode: "Dat is de code van deze telefoon. Typ de code van de andere telefoon.",
+    iosInstall: "Speel BONK als app: tik op Deel en kies Zet op beginscherm.",
+    namesDuo: "Hoe heten jullie?", namesTeams: "Hoe heten de teams?",
+    wzOn: "Verder", wzOne: "Verder met één telefoon", wzDone: "Klaar", wzNext: "Volgende", vs: "tegen",
+    sumGoal: n => `Tot ${n} punten`, sumNoGoal: "Zonder eindscore", sumDur: s => `${s} seconden per beurt`,
+    sumTwo: n => `Twee telefoons · ${n} op de andere`, sumOne: "Eén telefoon, die geef je door"
+  },
+  en: {
+    player: n => `Player ${n}`, team: t => `Team ${t}`, card: (i, n) => `card ${i} / ${n}`,
+    kHintDuo: "You guess. Does your opponent say a word of more than one syllable, or (part of) the word itself? Tap BONK: that costs them a point.",
+    kHint: "Does the explainer say a word of more than one syllable? Tap BONK. They get −1.",
+    goal: n => `Playing to ${n} points`, noGoal: "Playing without an end score", upTo: n => `to ${n}`,
+    waitGame: "Waiting for the game…", waitStart: n => `Waiting for ${n} to start`, startTurn: s => `Start turn · ${s} s`,
+    cont: n => `Continue · ${n}`, begins: n => `Start · ${n} goes first`,
+    tie: " It’s a tie! One more round.",
+    lastTurn: (n, need) => ` <b>${n}</b> gets one last turn and needs ${need} ${pl(need, "point", "points")} to win.`,
+    goalHit: "Goal reached!", stopped: "Turn ended · next up", timeUp: "Time’s up! · next up",
+    turnPts: (n, pts) => `${n} scored <b>${fmt(pts)}</b> ${pl(pts, "point", "points")} this turn.`,
+    hide: "Hide", show: "Show",
+    noPoints: "No points yet. Start a turn to begin.", logStart: n => `${n} starts a turn`, tapAgain: "Tap again",
+    ready: "Ready to play?", again: "Keep playing", join: "Join", newGame: "New game",
+    nolib: "Couldn’t load the connection service. Check your internet and reload the page.",
+    noconf: "Two phones isn’t set up yet. You can still play on one phone.",
+    wins: (a, b) => `wins with <b>${a}</b> to <b>${b}</b>`,
+    cdHere: n => `${n}: explainer, grab the phone`, cdThere: n => `${n} is up. Pay attention!`,
+    lost: "Connection lost. Reconnecting…", getsReady: n => `${n} is getting ready…`, paused: "Paused",
+    bonkNext: "BONK! Next word coming up…", describes: n => `${n} is explaining`,
+    codeLine: c => `Other phone? Game code <b>${c}</b>`, thisPhone: n => `This phone: ${n}`,
+    connecting: c => `Connecting to game ${c}…`, patience: "Hang on…",
+    connected: c => `Connected to game ${c}. Settings and cards are handled on the other phone.`,
+    linkedOk: n => `<span class="ok">✓ Connected!</span> ${n} plays on the other phone.`,
+    waitPhone: `<span class="waitDot"></span>Waiting for the other phone…`, getCode: "Getting a game code…",
+    noCode: "Couldn’t create a game code. Reload the page.",
+    noGame: c => `No game found with code ${c}. Check the code on the other phone.`,
+    noServer: "No connection to the server. Check your internet.",
+    code4: "The code has 4 characters.", ownCode: "That’s this phone’s code. Type the code from the other phone.",
+    iosInstall: "Play BONK as an app: tap Share and choose Add to Home Screen.",
+    namesDuo: "What are your names?", namesTeams: "What are the teams called?",
+    wzOn: "Continue", wzOne: "Continue with one phone", wzDone: "Done", wzNext: "Next", vs: "vs",
+    sumGoal: n => `To ${n} points`, sumNoGoal: "No end score", sumDur: s => `${s} seconds per turn`,
+    sumTwo: n => `Two phones · ${n} on the other`, sumOne: "One phone, pass it around"
+  }
+};
+const T = (k, ...a) => { const v = (k in TX[S.lang]) ? TX[S.lang][k] : TX.nl[k]; return typeof v === "function" ? v(...a) : v; };
+function applyLang(){
+  const en = S.lang === "en";
+  document.documentElement.lang = S.lang;
+  document.querySelectorAll("[data-t]").forEach(el => {
+    const k = el.dataset.t;
+    if (!(k in NL)) NL[k] = el.innerHTML;
+    el.innerHTML = en && EN[k] ? EN[k] : NL[k];
+  });
+  document.querySelectorAll("[data-ta]").forEach(el => {
+    const [attr, k] = el.dataset.ta.split(":"), nk = k + "@" + attr;
+    if (!(nk in NL)) NL[nk] = el.getAttribute(attr) || "";
+    el.setAttribute(attr, en && EN[k] ? EN[k] : NL[nk]);
+  });
+  document.querySelectorAll("[data-lang]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === S.lang)));
+}
+applyLang();
+const tn = t => (S.names[t] || "").trim() || (S.duo ? T("player", t === "A" ? 1 : 2) : T("team", t));
 const esc = x => String(x).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
 let running=false, paused=false, remainingMs=S.dur*1000, endAt=0, timerId=null, lastSec=null;
@@ -925,7 +1084,7 @@ function renderWords(anim){
   for (const [id,txt] of [["easyText",c.easy],["hardText",c.hard]]) {
     const el = $(id); el.textContent = txt; el.classList.toggle("long", txt.length > 10);
   }
-  $("counter").textContent = role === "guest" ? `kaart ${mirror.idx+1} / ${mirror.total}` : `kaart ${S.idx+1} / ${S.cards.length}`;
+  $("counter").textContent = role === "guest" ? T("card", mirror.idx+1, mirror.total) : T("card", S.idx+1, S.cards.length);
   const st = $("stage");
   st.classList.remove("hitting", "flyOut", "preDeal", "in-deal", "in-ok", "in-skip", "in-bonk");
   $("easyBtn").classList.remove("hit"); $("hardBtn").classList.remove("hit");
@@ -957,12 +1116,10 @@ function render(){
   $("kNameA").textContent = tn("A"); $("kNameB").textContent = tn("B");
   $("kWords").hidden = S.duo; $("kGuess").hidden = !S.duo;
   updateHide();
-  for (const t of ["A","B"]) $("name"+t).placeholder = S.duo ? `Speler ${t === "A" ? 1 : 2}` : `Team ${t}`;
-  $("kHint").textContent = S.duo
-    ? "Jij raadt. Zegt je tegenstander een woord van meer dan één lettergreep, of (een stuk van) het woord zelf? Tik op BONK: dat kost hem een punt."
-    : "Zegt de omschrijver een woord van meer dan één lettergreep? Tik op BONK. Zij krijgen dan −1.";
+  for (const t of ["A","B"]) $("name"+t).placeholder = S.duo ? T("player", t === "A" ? 1 : 2) : T("team", t);
+  $("kHint").textContent = T(S.duo ? "kHintDuo" : "kHint");
   setScore($("kScoreA"), S.score.A); setScore($("kScoreB"), S.score.B);
-  $("kGoal").textContent = S.target ? `Spel tot ${S.target} punten` : "Spel zonder eindstand";
+  $("kGoal").textContent = S.target ? T("goal", S.target) : T("noGoal");
   $("kTeamA").classList.toggle("active", S.team === "A"); $("kTeamB").classList.toggle("active", S.team === "B");
   renderWords(); renderTimer(); hostPresence(); updateRoleView();
 }
@@ -992,6 +1149,9 @@ function toast(text, kind, anchor){
 }
 
 /* ---------- beurt ---------- */
+// gateBy onthoudt hoe de tekst gemaakt is, zodat hij bij een taalwissel opnieuw kan
+var lastGate = null;
+function gateBy(make){ lastGate = make; const [title, result] = make(); showGate(title, result); }
 function showGate(title, result){
   if (role !== "guest") gateInfo = { title, result: result || "" };
   $("gate").dataset.team = S.team;
@@ -1000,11 +1160,11 @@ function showGate(title, result){
   $("gTeam").textContent = tn(S.team);
   for (const t of ["A","B"]) { const inp = $("name"+t); if (document.activeElement !== inp) inp.value = S.names[t] || ""; }
   $("gsA").textContent = S.score.A; $("gsB").textContent = S.score.B;
-  $("gsTarget").textContent = S.target ? `tot ${S.target}` : "";
+  $("gsTarget").textContent = S.target ? T("upTo", S.target) : "";
   const mine = canStartHere();
   $("startBtn").disabled = !mine;
-  $("startBtn").textContent = !mine ? (role === "guest" && !gWelcomed ? "Wachten op het spel…" : `Wachten tot ${tn(S.team)} start`)
-    : result ? `Start beurt · ${S.dur} s` : (S.log.length && role !== "guest" ? `Verder · ${tn(S.team)}` : `Start · ${tn(S.team)} begint`);
+  $("startBtn").textContent = !mine ? (role === "guest" && !gWelcomed ? T("waitGame") : T("waitStart", tn(S.team)))
+    : result ? T("startTurn", S.dur) : (S.log.length && role !== "guest" ? T("cont", tn(S.team)) : T("begins", tn(S.team)));
   renderDur(); updateHide();
   const r = $("gResult");
   if (result) { r.innerHTML = result; r.hidden = false; } else r.hidden = true;
@@ -1053,22 +1213,22 @@ function endTurn(how){
   // na een volledige ronde (beide teams evenveel beurten): heeft iemand het doel gehaald?
   const roundDone = S.turns[prev] === S.turns[next];
   const top = Math.max(S.score.A, S.score.B);
-  let winner = null, note = "";
+  let winner = null, note = () => "";
   if (S.target && roundDone && top >= S.target) {
-    if (S.score.A === S.score.B) note = " Gelijkspel! Er komt nog een ronde.";
+    if (S.score.A === S.score.B) note = () => T("tie");
     else winner = S.score.A > S.score.B ? "A" : "B";
   } else if (S.target && !roundDone && S.score[prev] >= S.target) {
     const need = S.score[prev] - S.score[next] + 1;
-    note = ` <b>${esc(tn(next))}</b> krijgt nog één laatste beurt en moet ${need} ${need === 1 ? "punt" : "punten"} halen om te winnen.`;
+    note = () => T("lastTurn", esc(tn(next)), need);
   }
   S.team = next;
   advanceCard(); cardSeq++;
   remainingMs = S.dur*1000;
   save(); render(); wakeOff(); $("hurry").classList.remove("on");
   const goalHit = S.target && !roundDone && S.score[prev] >= S.target;
-  const title = goalHit ? "Doel gehaald!" : how ? "Beurt gestopt · volgende" : "Tijd is op! · volgende";
-  const go = () => winner ? winGame(winner) : showGate(title,
-    `${esc(tn(prev))} haalde <b>${fmt(pts)}</b> ${Math.abs(pts)===1?"punt":"punten"} deze beurt.` + note);
+  // als functie, zodat de tekst opnieuw kan worden gemaakt als de taal wisselt
+  const make = () => [T(goalHit ? "goalHit" : how ? "stopped" : "timeUp"), T("turnPts", esc(tn(prev)), pts) + note()];
+  const go = () => winner ? winGame(winner) : gateBy(make);
   if (how) return go();
   fx("timeup");
   setTimeout(go, 1100);
@@ -1090,7 +1250,7 @@ function setPeek(on){
   clearTimeout(peekT);
   $("stage").classList.toggle("peek", on);
   const b = $("peekBtn"); b.classList.remove("on"); if (on) { void b.offsetWidth; b.classList.add("on"); }
-  b.firstChild.textContent = on ? "Verberg" : "Laat zien";
+  b.firstChild.textContent = T(on ? "hide" : "show");
   if (on) peekT = setTimeout(() => setPeek(false), 4000);
 }
 function nextCard(anim){ lastAnim = anim || "skip"; cardSeq++; advanceCard(); renderWords(lastAnim); save(); hostPresence(); updateRoleView(); }
@@ -1156,10 +1316,10 @@ function stopAll(){
 /* ---------- menu ---------- */
 function renderLog(){
   const ul = $("log"); ul.innerHTML = "";
-  if (!S.log.length) { ul.innerHTML = '<li class="start">Nog geen punten. Start een beurt om te beginnen.</li>'; return; }
+  if (!S.log.length) { ul.innerHTML = `<li class="start">${T("noPoints")}</li>`; return; }
   for (const e of S.log) {
     const li = document.createElement("li");
-    if (e.start) { li.className = "start"; li.textContent = `Start beurt ${tn(e.team)}`; }
+    if (e.start) { li.className = "start"; li.textContent = T("logStart", tn(e.team)); }
     else {
       const dot = document.createElement("span"); dot.className = "dot " + e.team;
       const w = document.createElement("span"); w.className = "lw"; w.textContent = e.word;
@@ -1175,17 +1335,17 @@ function renderDur(){
     b.setAttribute("aria-pressed", String(+b.dataset.dur === S.dur)); b.disabled = running;
   });
 }
-function openMenu(){ if (role !== "guest" && running && !paused) pause(); renderLog(); $("menu").hidden = false; }
+function openMenu(){ if (role !== "guest" && running && !paused) pause(); renderLog(); document.querySelectorAll(".langSeg2 button").forEach(b => b.disabled = running || counting); $("menu").hidden = false; }
 function closeMenu(){ $("menu").hidden = true; }
 
 function confirmTap(btn, label, fn){
   if (btn.classList.contains("armed")) { btn.classList.remove("armed"); btn.textContent = label; fn(); return; }
-  btn.classList.add("armed"); btn.textContent = "Tik nogmaals";
+  btn.classList.add("armed"); btn.textContent = T("tapAgain");
   setTimeout(()=>{ btn.classList.remove("armed"); btn.textContent = label; }, 3000);
 }
 function resetScores(){
   stopAll(); winTeam = null; S.score = {A:0,B:0}; S.log = []; S.team = "A"; S.turnPts = 0; S.turns = {A:0,B:0};
-  save(); render(); renderLog(); showGate("Klaar om te spelen?");
+  save(); render(); renderLog(); gateBy(() => [T("ready")]);
 }
 
 /* ---------- events ---------- */
@@ -1219,7 +1379,7 @@ $("menu").addEventListener("click", e=>{ if (e.target === $("menu")) closeMenu()
 document.addEventListener("click", e=>{
   const t = e.target.closest(".tSeg button"), d = e.target.closest(".dSeg button");
   if ((t || d) && role === "guest") return;
-  if (t) { S.target = +t.dataset.t; save(); renderDur(); $("gsTarget").textContent = S.target ? `tot ${S.target}` : ""; }
+  if (t) { S.target = +t.dataset.t; save(); renderDur(); $("gsTarget").textContent = S.target ? T("upTo", S.target) : ""; }
   if (d && !running) { S.dur = +d.dataset.dur; remainingMs = S.dur*1000; save(); renderDur(); renderTimer(); }
 });
 for (const t of ["A","B"]) {
@@ -1230,7 +1390,7 @@ for (const t of ["A","B"]) {
     $("tnA").textContent = tn("A"); $("tnB").textContent = tn("B"); $("turnLabel").textContent = tn(S.team);
     $("gTeam").textContent = tn(S.team);
     if (gateInfo || role === "guest") updateDuo();
-    if ($("gate").classList.contains("home") && canStartHere()) $("startBtn").textContent = S.log.length && role !== "guest" ? `Verder · ${tn(S.team)}` : `Start · ${tn(S.team)} begint`;
+    if ($("gate").classList.contains("home") && canStartHere()) $("startBtn").textContent = S.log.length && role !== "guest" ? T("cont", tn(S.team)) : T("begins", tn(S.team));
     hostPresence();
   });
   $("name"+t).addEventListener("keydown", e => { if (e.key === "Enter") e.target.blur(); });
@@ -1238,7 +1398,7 @@ for (const t of ["A","B"]) {
 $("newGameBtn").onclick = ()=>{ if (role === "guest") sendCmd({ c:"newgame" }); else newGame(); };
 $("winMenuBtn").onclick = ()=>{ openMenu(); };
 
-$("resetAllBtn").onclick = e=>confirmTap(e.currentTarget, "Nieuw spel", ()=>{ advanceCard(); cardSeq++; resetScores(); closeMenu(); showLobby(); });
+$("resetAllBtn").onclick = e=>confirmTap(e.currentTarget, T("newGame"), ()=>{ advanceCard(); cardSeq++; resetScores(); closeMenu(); showLobby(); });
 
 window.addEventListener("keydown", e=>{
   if (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT" || role === "guest" || !$("krantOv").hidden || !$("joinOv").hidden) return;
@@ -1306,8 +1466,6 @@ var stateTimer = null, gSubs = [];
 const lastBonkId = {};            // telefoon -> laatst verwerkte BONK
 const ALPH = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const newCode = () => Array.from({length:4}, () => ALPH[Math.floor(Math.random()*ALPH.length)]).join("");
-const NOLIB = "Kon de verbindingsdienst niet laden. Check je internet en herlaad de pagina.";
-const NOCONF = "Twee telefoons is nog niet ingesteld. Je kunt wel met één telefoon spelen.";
 let CID = null;
 try { CID = sessionStorage.getItem("bonk-cid"); } catch(e){}
 if (!CID) { CID = Math.random().toString(36).slice(2, 10); try { sessionStorage.setItem("bonk-cid", CID); } catch(e){} }
@@ -1370,7 +1528,7 @@ function playFx(m){
 function fillWin(team){
   $("winOv").dataset.team = team;
   $("winTeam").textContent = tn(team);
-  $("winText").innerHTML = `wint met <b>${S.score[team]}</b> tegen <b>${S.score[other(team)]}</b>`;
+  $("winText").innerHTML = T("wins", S.score[team], S.score[other(team)]);
   $("newGameBtn").disabled = role === "guest" && !guestOnline();
 }
 var countEndS = 0;
@@ -1380,7 +1538,7 @@ function runCountdown(at){
   const begin = at - COUNT_MS;
   $("gate").hidden = true; $("winOv").hidden = true;
   const steps = ["3", "2", "1", "GO!"], num = $("countNum");
-  $("countSub").textContent = describingHere() ? `${tn(S.team)}: omschrijver pakt de telefoon` : `${tn(S.team)} is aan de beurt. Let goed op!`;
+  $("countSub").textContent = T(describingHere() ? "cdHere" : "cdThere", tn(S.team));
   $("countOv").hidden = false;
   num.textContent = ""; num.className = "";
   const ring = $("countRing"), ov = $("countOv");
@@ -1415,11 +1573,11 @@ function updateRoleView(){
   $("kEasy").classList.toggle("long", c.easy.length > 7); $("kHard").classList.toggle("long", c.hard.length > 7);
   $("kBar").hidden = !running; $("kBar").classList.toggle("still", paused);
   let txt, on = false;
-  if (role === "guest" && !guestOnline()) txt = "Verbinding kwijt. Opnieuw verbinden…";
-  else if (!running) txt = `${tn(S.team)} maakt zich klaar…`;
-  else if (paused) txt = "Pauze";
-  else if (bonkLock) txt = "BONK! Volgend woord komt eraan…";
-  else { txt = `${tn(S.team)} omschrijft`; on = true; }
+  if (role === "guest" && !guestOnline()) txt = T("lost");
+  else if (!running) txt = T("getsReady", tn(S.team));
+  else if (paused) txt = T("paused");
+  else if (bonkLock) txt = T("bonkNext");
+  else { txt = T("describes", tn(S.team)); on = true; }
   setKrantStatus(txt, on);
 }
 function setKrantStatus(text, enabled){ $("kStatus").textContent = text; $("bonkBtn").disabled = !enabled; }
@@ -1443,15 +1601,15 @@ function updateDuo(){
   if (role === "host") {
     const line = $("gateCodeLine");
     line.hidden = !hostCode || linked();
-    if (hostCode) line.innerHTML = `Andere telefoon? Spelcode <b>${hostCode}</b>`;
+    if (hostCode) line.innerHTML = T("codeLine", hostCode);
     if (!$("wizard").hidden) wzRender();
   }
   if (role === "guest") {
-    $("guestTitle").textContent = gWelcomed ? `Deze telefoon: ${tn(myTeam)}` : `Verbinden met spel ${gCode}…`;
+    $("guestTitle").textContent = gWelcomed ? T("thisPhone", tn(myTeam)) : T("connecting", gCode);
     $("guestStatus").textContent = gFailed ? gFailed
-      : !gWelcomed ? "Even geduld…"
-      : guestOnline() ? `Verbonden met spel ${gCode}. Instellingen en kaarten regel je op de andere telefoon.`
-      : "Verbinding kwijt. Opnieuw verbinden…";
+      : !gWelcomed ? T("patience")
+      : guestOnline() ? T("connected", gCode)
+      : T("lost");
     $("guestRetry").hidden = !gFailed;
     return;
   }
@@ -1461,15 +1619,15 @@ function updateDuo(){
   $("duoMine").hidden = !n;
   $("myA").textContent = tn("A"); $("myB").textContent = tn("B");
   $("myA").setAttribute("aria-pressed", String(myTeam === "A")); $("myB").setAttribute("aria-pressed", String(myTeam === "B"));
-  $("duoStatus").innerHTML = n ? `<span class="ok">✓ Verbonden!</span> ${esc(tn(other(myTeam)))} speelt op de andere telefoon.`
-    : hostCode ? `<span class="waitDot"></span>Wachten op de andere telefoon…` : "Spelcode ophalen…";
+  $("duoStatus").innerHTML = n ? T("linkedOk", esc(tn(other(myTeam))))
+    : hostCode ? T("waitPhone") : T("getCode");
 }
 
 
 /* --- spel-telefoon (host) --- */
 function stateMsg(){
   const c = S.cards[S.idx];
-  return { v:VERSION, team:S.team, running, paused, counting, guestTeam:other(myTeam),
+  return { v:VERSION, lang:S.lang, team:S.team, running, paused, counting, guestTeam:other(myTeam),
     ms: Math.round(running && !paused ? Math.max(0, endAt - performance.now()) : remainingMs),
     endS: running && !paused ? Math.round(serverNow() + (endAt - performance.now())) : null,
     dur:S.dur, seq:cardSeq, lock:bonkLock, anim:lastAnim, duo:S.duo,
@@ -1533,7 +1691,7 @@ function handleIncoming(d){
 }
 function startHost(tries){
   tries = tries || 0;
-  if (!fbReady()) { const m = FIREBASE_CONFIG ? NOLIB : NOCONF; $("duoStatus").textContent = m; return; }
+  if (!fbReady()) { const m = T(FIREBASE_CONFIG ? "nolib" : "noconf"); $("duoStatus").textContent = m; return; }
   let code = null;
   try { code = localStorage.getItem("bonk-code"); } catch(e){}
   if (!code || !/^[A-Z0-9]{4}$/.test(code) || tries > 0) code = newCode();
@@ -1545,7 +1703,7 @@ function startHost(tries){
     if (role !== "host") return;
     if (err || !committed) {
       if (tries < 6) return startHost(tries + 1);
-      const m = "Kon geen spelcode maken. Herlaad de pagina.";
+      const m = T("noCode");
       $("duoStatus").textContent = m;
       return;
     }
@@ -1592,14 +1750,14 @@ function stopHosting(){
   hostCode = null;
 }
 function joinGame(code){
-  if (!fbReady()) { $("joinOv").hidden = false; joinMsg(FIREBASE_CONFIG ? NOLIB : NOCONF); return; }
+  if (!fbReady()) { $("joinOv").hidden = false; joinMsg(T(FIREBASE_CONFIG ? "nolib" : "noconf")); return; }
   stopHosting();
   role = "guest"; gCode = code; gWelcomed = false; gFailed = false; winTeam = null; hostOnline = false; lastFxId = null;
   try { sessionStorage.setItem("bonk-join", code); } catch(e){}
   document.body.classList.add("guest");
   stopAll(); closeMenu(); $("rules").hidden = true; $("joinOv").hidden = true; $("winOv").hidden = true; $("lobby").hidden = true;
   mirror = { card:{ easy:"—", hard:"—" }, idx:0, total:0, seq:-1, v:null };
-  showGate("Meedoen", "");
+  showGate(T("join"), "");
   updateDuo();
   connectGuest(code);
 }
@@ -1621,7 +1779,7 @@ function connectGuest(code){
   gSubs.forEach(off => off()); gSubs = [];
   gref(code, "host").once("value").then(snap => {
     if (role !== "guest" || gCode !== code) return;
-    if (!snap.val()) return guestFail(`Geen spel gevonden met code ${code}. Check de code op de andere telefoon.`);
+    if (!snap.val()) return guestFail(T("noGame", code));
     gConnecting = false;
     armGuest();
     const sub = (path, fn) => { const r = gref(code, path); r.on("value", fn); gSubs.push(() => r.off("value", fn)); };
@@ -1634,12 +1792,14 @@ function connectGuest(code){
       if (!first) playFx(d);        // effecten van voor het meedoen niet afspelen
     });
     updateDuo();
-  }).catch(() => guestFail("Geen verbinding met de server. Check je internet."));
+  }).catch(() => guestFail(T("noServer")));
 }
 
 function applyState(d){
   gLast = Date.now();
   if (d.guestTeam === "A" || d.guestTeam === "B") { myTeam = d.guestTeam; gWelcomed = true; }
+  // de gast volgt de taal van de spel-telefoon (de kaarten komen daar ook vandaan)
+  if ((d.lang === "nl" || d.lang === "en") && d.lang !== S.lang) { S.lang = d.lang; applyLang(); setPeek(false); }
   const num = (x, f) => Number.isFinite(Number(x)) ? Number(x) : f;
   S.team = d.team === "B" ? "B" : "A";
   S.score = { A: num(d.score && d.score.A, 0), B: num(d.score && d.score.B, 0) };
@@ -1696,8 +1856,8 @@ $("joinCode").addEventListener("input", e => { e.target.value = e.target.value.t
 $("joinCode").addEventListener("keydown", e => { if (e.key === "Enter") $("joinGo").click(); });
 $("joinGo").onclick = () => {
   const code = $("joinCode").value.toUpperCase().replace(/[^A-Z0-9]/g, "");
-  if (code.length !== 4) return joinMsg("De code heeft 4 tekens.");
-  if (code === hostCode) return joinMsg("Dat is de code van deze telefoon. Typ de code van de andere telefoon.");
+  if (code.length !== 4) return joinMsg(T("code4"));
+  if (code === hostCode) return joinMsg(T("ownCode"));
   audioOn(); goFullscreen(); joinGame(code);
 };
 $("krantRetry").onclick = () => connectGuest(gCode);
@@ -1726,7 +1886,7 @@ function setupInstallBar(){
   let dismissed = false; try { dismissed = !!localStorage.getItem("bonk-install-hidden"); } catch(e){}
   if (isApp() || dismissed) { $("installBar").hidden = true; return; }
   if (isIOS) {
-    $("installText").textContent = "Speel BONK als app: tik op Deel en kies Zet op beginscherm.";
+    $("installText").textContent = T("iosInstall");
     $("installBtn").hidden = true; $("installBar").hidden = false;
   } else if (installPrompt) {
     $("installBtn").hidden = false; $("installBar").hidden = false;
@@ -1744,20 +1904,44 @@ $("installClose").onclick = () => { $("installBar").hidden = true; try { localSt
 setupInstallBar();
 
 /* ---------- kaarten uit words.json ---------- */
-fetch("words.json", { cache: "no-cache" })
-  .then(r => r.ok ? r.json() : Promise.reject())
-  .then(j => {
-    const list = (j.cards || []).filter(c => Array.isArray(c) && c[0] && c[1]).map(c => ({ easy:String(c[0]).trim(), hard:String(c[1]).trim() }));
-    if (list.length < 10) return;
-    base = list;
-    if (!S.custom && S.deckVer !== j.version && !running) {
-      S.cards = shuffled(base); S.idx = 0; S.deckVer = j.version; save(); render();
-    }
-  })
-  .catch(() => {});
+function loadDeck(){
+  const lang = S.lang;
+  fetch(DECK_FILE[lang], { cache: "no-cache" })
+    .then(r => r.ok ? r.json() : Promise.reject())
+    .then(j => {
+      if (S.lang !== lang) return;   // intussen van taal gewisseld
+      const list = (j.cards || []).filter(c => Array.isArray(c) && c[0] && c[1]).map(c => ({ easy:String(c[0]).trim(), hard:String(c[1]).trim() }));
+      if (list.length < 10) return;
+      base = list;
+      if (!S.custom && S.deckVer !== j.version && !running) {
+        S.cards = shuffled(base); S.idx = 0; S.deckVer = j.version; cardSeq++; save(); render();
+      }
+    })
+    .catch(() => {});
+}
+loadDeck();
+
+/* ---------- taal wisselen ---------- */
+function setLang(l){
+  if ((l !== "nl" && l !== "en") || role === "guest" || running || counting || l === S.lang) return;
+  S.decks[S.lang] = { cards:S.cards, idx:S.idx, ver:S.deckVer };
+  S.lang = l;
+  const d = S.decks[l]; delete S.decks[l];
+  base = FALLBACK[l];
+  if (d && Array.isArray(d.cards) && d.cards.length) { S.cards = d.cards; S.idx = Math.min(d.idx || 0, d.cards.length - 1); S.deckVer = d.ver || 0; }
+  else { S.cards = shuffled(base); S.idx = 0; S.deckVer = 0; }
+  cardSeq++;
+  save(); applyLang(); setPeek(false); loadDeck(); render(); renderLog();
+  if (!$("gate").hidden && lastGate) gateBy(lastGate);
+  if ($("gate").classList.contains("home")) setupInstallBar();
+  if (!$("wizard").hidden) wzRender();
+  if (winTeam) fillWin(winTeam);
+  hostPresence();
+}
+document.addEventListener("click", e => { const b = e.target.closest("[data-lang]"); if (b) setLang(b.dataset.lang); });
 
 render();
-showGate(S.log.length ? "Verder spelen" : "Klaar om te spelen?");
+gateBy(() => [T(S.log.length ? "again" : "ready")]);
 /* ---------- keuzescherm ---------- */
 function showLobby(){ $("lobbyResume").hidden = !S.log.length; $("lobby").hidden = false; }
 $("lobbyNew").onclick = () => {
@@ -1778,23 +1962,23 @@ const SUM_IC = {
 function wzRender(){
   document.querySelectorAll(".wzChoice[data-t]").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.t === S.target)));
   document.querySelectorAll(".wzChoice[data-dur]").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.dur === S.dur)));
-  for (const t of ["A","B"]) { const inp = $("wzName"+t); if (document.activeElement !== inp) inp.value = S.names[t] || ""; inp.placeholder = S.duo ? `Speler ${t === "A" ? 1 : 2}` : `Team ${t}`; }
+  for (const t of ["A","B"]) { const inp = $("wzName"+t); if (document.activeElement !== inp) inp.value = S.names[t] || ""; inp.placeholder = S.duo ? T("player", t === "A" ? 1 : 2) : T("team", t); }
   document.querySelectorAll(".wzMode button").forEach(b => b.setAttribute("aria-pressed", String((b.dataset.duo === "1") === S.duo)));
-  $("wzNameTitle").textContent = S.duo ? "Hoe heten jullie?" : "Hoe heten de teams?";
+  $("wzNameTitle").textContent = T(S.duo ? "namesDuo" : "namesTeams");
   document.querySelectorAll("#wzDots i").forEach((d, i) => d.classList.toggle("on", i < wzStep));
   $("wzCount").textContent = `${wzStep} / ${WZ_STEPS}`;
   const next = $("wzNext");
-  next.textContent = wzStep === 4 ? (linked() ? "Verder" : "Verder met één telefoon")
-    : wzStep === WZ_STEPS ? (canStartHere() ? `Start · ${tn(S.team)} begint` : "Klaar")
-    : "Volgende";
+  next.textContent = wzStep === 4 ? T(linked() ? "wzOn" : "wzOne")
+    : wzStep === WZ_STEPS ? (canStartHere() ? T("begins", tn(S.team)) : T("wzDone"))
+    : T("wzNext");
   updateHide();
   if (wzStep === WZ_STEPS) {
     const ic = k => `<span class="ic b" aria-hidden="true">${SUM_IC[k]}</span>`;
     $("wzSum").innerHTML =
-      `<li>${ic("team")}<span><span class="na">${esc(tn("A"))}</span><span class="vs">tegen</span><span class="nb">${esc(tn("B"))}</span></span></li>` +
-      `<li>${ic("trophy")}<span>${S.target ? `Tot ${S.target} punten` : "Zonder eindscore"}</span></li>` +
-      `<li>${ic("timer")}<span>${S.dur} seconden per beurt</span></li>` +
-      `<li>${ic("phones")}<span>${linked() ? `Twee telefoons · ${esc(tn(other(myTeam)))} op de andere` : "Eén telefoon, die geef je door"}</span></li>`;
+      `<li>${ic("team")}<span><span class="na">${esc(tn("A"))}</span><span class="vs">${T("vs")}</span><span class="nb">${esc(tn("B"))}</span></span></li>` +
+      `<li>${ic("trophy")}<span>${S.target ? T("sumGoal", S.target) : T("sumNoGoal")}</span></li>` +
+      `<li>${ic("timer")}<span>${T("sumDur", S.dur)}</span></li>` +
+      `<li>${ic("phones")}<span>${linked() ? T("sumTwo", esc(tn(other(myTeam)))) : T("sumOne")}</span></li>`;
   }
 }
 function wzShow(step){
@@ -1813,7 +1997,7 @@ $("wzNext").onclick = () => {
   if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
   if (wzStep < WZ_STEPS) return wzShow(wzStep + 1);
   $("wizard").hidden = true;
-  showGate("Klaar om te spelen?");
+  gateBy(() => [T("ready")]);
   if (canStartHere()) beginTurn();
 };
 $("wzBack").onclick = () => { if (wzStep > 1) wzShow(wzStep - 1); else { $("wizard").hidden = true; showLobby(); } };

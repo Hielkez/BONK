@@ -21,6 +21,7 @@ Praat Nederlands met Hielke, kort en direct. Hij test alles op zijn iPhone (vaak
   - Klok via `.info/serverTimeOffset`; aftellen en beurttijd lopen op servertijd zodat beide telefoons gelijk lopen.
   - Database-regels: lezen/schrijven alleen onder `games/$code` met een geldige code. Data blijft klein (~1–2 kB per spel).
 - Zonder tweede telefoon werkt alles op één telefoon die je doorgeeft.
+- **Taal**: Nederlands (standaard) of Engels, te kiezen op het keuzescherm en in het menu (niet tijdens een beurt). `S.lang` in de stand; elke taal heeft een eigen stapel, de andere wordt bewaard in `S.decks`. Vaste HTML-teksten hebben `data-t`/`data-ta` (Nederlands staat in de HTML, Engels in `EN`), teksten uit de code staan in `TX` en gaan via `T()`. Met twee telefoons volgt de gast de taal van de host.
 - Stand en voortgang in `localStorage` (`woordspel-v1`), deck wordt pas opnieuw geschud als alle kaarten op zijn (ook over potjes heen).
 
 ## Belangrijke keuzes (niet zomaar terugdraaien)
@@ -39,6 +40,7 @@ Praat Nederlands met Hielke, kort en direct. Hij test alles op zijn iPhone (vaak
 - Microfoon/automatische BONK is geprobeerd en afgewezen (niet betrouwbaar genoeg).
 
 ## Kaarten (`words.json`)
+Engelse kaarten staan in `words-en.json` (zelfde formaat, eigen `version`, nu versie 1, 388 kaarten); dezelfde regels gelden, met Engelse woorden van één lettergreep.
 Formaat: `{"version": N, "info": "...", "cards": [["Makkelijk","Moeilijk"], ...]}` (nu versie 7, 982 kaarten). **Verhoog `version`** bij elke wijziging, anders schudt het spel de nieuwe kaarten niet in.
 Regels voor een goede kaart:
 - Makkelijk: concreet, kent een kind van 10, goed met korte woorden te omschrijven.
