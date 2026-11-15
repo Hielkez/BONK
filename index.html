@@ -863,7 +863,7 @@ body:not(.guest) .guestOnly, body.guest .hostOnly{display:none!important}
 
 <script>
 (function(){
-const VERSION = "v45 · 5 nov 21:40";
+const VERSION = "v46 · 15 nov 17:30";
 document.querySelectorAll("[data-ver]").forEach(el => el.textContent = "BONK " + VERSION);
 
 const DEFAULT_CARDS = [
@@ -929,6 +929,8 @@ function renderWords(anim){
   const st = $("stage");
   st.classList.remove("hitting", "flyOut", "preDeal", "in-deal", "in-ok", "in-skip", "in-bonk");
   $("easyBtn").classList.remove("hit"); $("hardBtn").classList.remove("hit");
+  // geen beurt bezig (tijd op, overdracht, voor de start): kaart verborgen houden, anders ziet de volgende speler zijn woorden al
+  if (!anim && !running) st.classList.add("preDeal");
   if (anim) { void st.offsetWidth; st.classList.add("in-" + anim); startCool(); if (st.classList.contains("peek")) setPeek(false); }
 }
 /* minimale tijd per kaart voordat +1/+3 telt */
