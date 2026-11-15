@@ -1,21 +1,17 @@
 # BONK!
 
-Woordspel voor twee teams. Omschrijf het woord met **alleen woorden van één lettergreep**. Zeg je een langer woord? Dan krijg je een BONK met de opgerolde krant van de tegenpartij.
+Woordspel voor twee teams of met z'n tweeën. Omschrijf het woord met **alleen woorden van één lettergreep**. Zeg je een langer woord, of een stuk van het woord zelf? Dan roept de tegenpartij **BONK!** en kost het je een punt.
 
-Speel het op: https://hielkez.github.io/BONK/
+Speel het op: https://hielkez.github.io/BONK/ (zet hem op je beginscherm voor een app-gevoel).
 
-## Elk team een eigen telefoon
+## Spelen
+1. Tik op **Spel maken** en loop het stappenplan door: namen, tot hoeveel punten, hoe lang een beurt duurt.
+2. Speel je met twee telefoons? De andere telefoon tikt op **Meedoen** en typt de code (of scant de QR-code). Wie uitlegt ziet de kaart, de andere telefoon wordt het BONK-scherm met de stand en een grote BONK-knop.
+3. Eén telefoon kan ook: die geef je door.
 
-1. Open de site op de telefoon van team A. Op het startscherm staat een spelcode en een QR-code.
-2. Team B opent de site op hun telefoon, tikt op **Meedoen** en typt de code (of scant de QR-code).
-3. Wie aan de beurt is ziet de kaarten. De andere telefoon toont het woord, de tijd en een grote BONK-knop voor de tegenpartij. Na elke beurt wisselen de schermen vanzelf.
+Elke kaart heeft een makkelijk woord (+1) en een moeilijk woord (+3) die bij elkaar horen. Per kaart telt één woord, overslaan kan niet. Haalt een team het doel, dan krijgt het andere team nog één volle beurt om in te halen.
 
-De telefoon die het spel maakt houdt de stand bij; instellingen en kaarten regel je daar. Zonder tweede telefoon speel je gewoon met één telefoon die je doorgeeft.
+## Techniek
+Eén bestand (`index.html`), gehost op GitHub Pages. Twee telefoons praten via Firebase Realtime Database (`firebase-config.js`). De kaarten staan in [`words.json`](words.json); verhoog `version` als je de lijst aanpast.
 
-De telefoons verbinden direct met elkaar via WebRTC. [PeerJS](https://peerjs.com) koppelt ze aan elkaar met de gratis openbare koppelserver. Er is geen eigen server nodig.
-
-## Eigen kaarten
-
-Menu → Kaarten bewerken. Eén kaart per regel: `makkelijk / moeilijk`.
-
-De standaardkaarten (ruim 1700) staan in [`words.json`](words.json). Het spel speelt de hele stapel af voordat er iets terugkomt, ook over meerdere potjes heen. Pas je de lijst aan, verhoog dan `version`; dan schudt het spel de nieuwe kaarten.
+Meer achtergrond en alle ontwerpkeuzes: [`CLAUDE.md`](CLAUDE.md).
